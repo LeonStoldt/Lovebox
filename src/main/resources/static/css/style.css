@@ -1,5 +1,26 @@
+/*region fonts*/
+@font-face {
+    font-family: 'Behind-Violet-Eyes';
+    src:
+            url('../font/Behind-Violet-Eyes.otf') format('truetype'),
+            url('../font/Behind-Violet-Eyes.ttf') format('truetype');
+}
+/*endregion*/
+
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
+    display: flex;
     background-color: #000000;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-family: Behind-Violet-Eyes, cursive;
+    letter-spacing: 0.1em;
+    font-size: 2em;
 }
 
 .message {
