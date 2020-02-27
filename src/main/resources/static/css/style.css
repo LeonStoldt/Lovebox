@@ -1,10 +1,10 @@
 /*region fonts*/
 @font-face {
     font-family: 'Behind-Violet-Eyes';
-    src:
-            url('../font/Behind-Violet-Eyes.otf') format('truetype'),
-            url('../font/Behind-Violet-Eyes.ttf') format('truetype');
+    src: url('../font/Behind-Violet-Eyes.otf') format('truetype'),
+    url('../font/Behind-Violet-Eyes.ttf') format('truetype');
 }
+
 /*endregion*/
 
 html {
@@ -15,14 +15,37 @@ html {
 body {
     display: flex;
     background-color: #000000;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100%;
+    margin: auto;
     font-family: Behind-Violet-Eyes, cursive;
-    letter-spacing: 0.1em;
-    font-size: 2em;
+}
+
+.message-area {
+    padding: 0 5%;
+    text-align: center;
+    white-space: pre-wrap;
 }
 
 .message {
+    letter-spacing: 0.1em;
+    font-size: 2.2em;
+    color: aqua;
+}
+
+.register-area {
+    padding: 0 20%;
+    text-align: center;
+    font-size: 3em;
+}
+
+.register-text {
+    color: #fff;
+}
+
+.highlight {
+    font-style: oblique;
     color: aqua;
 }

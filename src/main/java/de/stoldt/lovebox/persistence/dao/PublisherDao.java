@@ -7,11 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class PublisherDao {
 
     private final PublisherRepository repository;
-    private Publisher publisher;
 
     @Autowired
     public PublisherDao(PublisherRepository repository) {
@@ -19,18 +20,14 @@ public class PublisherDao {
     }
 
     public Publisher getPublisher() {
-        if (publisher == null) {
-            publisher = repository
-                    .findAll()
-                    .stream()
-                    .findFirst()
-                    .map(Publisher::new)
-                    .orElse(null);
-        }
-        return publisher;
+        List<PublisherEntity> allPublisher = repository.findAll();
+        return !allPublisher.isEmpty()
+                ? new Publisher(allPublisher.get(0))
+                : null;
     }
 
     public void save(@NonNull Publisher newPublisher) {
+        repository.deleteAll();
         repository.save(new PublisherEntity(newPublisher));
     }
 }

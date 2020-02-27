@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Register Lovebox</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"/>
+</head>
+
+<body>
+
+<div class="register-area">
+
+    <p class="register-text">
+        Bitte registriere einen User, indem du dem Telegram Bot <span class="register-text highlight">LeonsLoveboxBot</span>
+    </p>
+    <p class="register-text">
+        mit dem Befehl <span class="register-text highlight">/register@Box</span> anschreibst und den Anweisungen folgst. Aktualisiere anschließend die Seite.
+    </p>
+    <p class="register-text">
+        Die benötigte UUID lautet:
+    </p>
+    <span class="register-text highlight" th:text="${uuid}"></span>
+    <p class="register-text">
+        Um den User wieder zu deaktivieren, schreibe <span class="register-text highlight">/unregisterBox</span>.
+    </p>
+</div>
+<h1 class="message" th:utext="${message}"></h1>
+
+</body>
+</html>

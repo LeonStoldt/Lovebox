@@ -1,7 +1,6 @@
 package de.stoldt.lovebox.bo;
 
 import com.pengrad.telegrambot.model.Chat;
-import com.pengrad.telegrambot.model.User;
 import de.stoldt.lovebox.persistence.entity.PublisherEntity;
 
 public class Publisher {

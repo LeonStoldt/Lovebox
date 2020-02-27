@@ -7,31 +7,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class BoxDao {
 
     private final BoxRepository repository;
-    private Box box;
 
     @Autowired
     public BoxDao(BoxRepository repository) {
         this.repository = repository;
     }
 
-    public Box getBox() {
-        if (box == null) {
-            box = repository
-                    .findAll()
-                    .stream()
-                    .findFirst()
-                    .map(Box::new)
-                    .orElse(null);
-        }
-        return box;
+    public @NonNull Box getBox() {
+        List<BoxEntity> allBoxes = repository.findAll();
+        return !allBoxes.isEmpty()
+                ? new Box(allBoxes.get(0))
+                : initializeAndSaveNewBox();
+    }
+
+    public Box initializeAndSaveNewBox() {
+        Box emptyBox = new Box();
+        save(emptyBox);
+        return emptyBox;
     }
 
     public void save(@NonNull Box newBox) {
-        repository.save(new BoxEntity(box));
+        repository.deleteAll();
+        repository.save(new BoxEntity(newBox));
     }
 
 }
