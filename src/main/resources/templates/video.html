@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Lovebox Display</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"/>
+</head>
+<!-- You need to allow audio and scripts on this website to use the autoplay feature with activated audio -->
+<body>
+<div>
+    <video id="video" autoplay loop>
+        <source th:src="${fileUrl}" type="video/mp4">
+    </video>
+</div>
+</body>
+</html>

@@ -23,12 +23,6 @@ body {
     font-family: Behind-Violet-Eyes, cursive;
 }
 
-.image {
-    max-height: 100vh;
-    max-width: 100vw;
-    object-fit: contain;
-}
-
 .message-area {
     padding: 0 5%;
     text-align: center;
@@ -39,6 +33,12 @@ body {
     letter-spacing: 0.1em;
     font-size: 2.2em;
     color: aqua;
+}
+
+.image {
+    max-height: 100vh;
+    max-width: 100vw;
+    object-fit: contain;
 }
 
 .register-area {

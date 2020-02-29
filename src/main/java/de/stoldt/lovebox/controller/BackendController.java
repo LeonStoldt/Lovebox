@@ -25,6 +25,7 @@ public class BackendController {
 
     private final List<Message> unreadMessages;
     private final List<GetFile> unreadPictures;
+    private final List<GetFile> unreadVideos;
     private final BoxDao boxDao;
 
     @Autowired
@@ -32,6 +33,7 @@ public class BackendController {
         this.telegramService = telegramService;
         this.unreadMessages = telegramService.getUnreadMessages();
         this.unreadPictures = telegramService.getUnreadPictures();
+        this.unreadVideos = telegramService.getUnreadVideos();
         this.boxDao = boxDao;
     }
 
@@ -54,6 +56,18 @@ public class BackendController {
                     String fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), fileResponse.file().filePath());
                     model.addAttribute("fileUrl", fileUrl);
                     return "picture";
+                } else {
+                    LOGGER.warn("Received status code: {} from getFile {}", fileResponse.errorCode(), fileRequest);
+                }
+            }
+
+            if (!unreadVideos.isEmpty()) {
+                GetFile fileRequest = unreadVideos.remove(0);
+                GetFileResponse fileResponse = telegramService.getFile(fileRequest);
+                if (fileResponse.isOk()) {
+                    String fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), fileResponse.file().filePath());
+                    model.addAttribute("fileUrl", fileUrl);
+                    return "video";
                 } else {
                     LOGGER.warn("Received status code: {} from getFile {}", fileResponse.errorCode(), fileRequest);
                 }

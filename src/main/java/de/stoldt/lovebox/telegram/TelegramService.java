@@ -3,10 +3,10 @@ package de.stoldt.lovebox.telegram;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Chat;
-import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.Video;
 import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetFileResponse;
@@ -41,6 +41,7 @@ public class TelegramService extends TelegramBot {
     private BoxDao boxDao;
     private ArrayList<Message> unreadMessages;
     private ArrayList<GetFile> unreadPictures;
+    private ArrayList<GetFile> unreadVideos;
 
     private final String apiToken;
 
@@ -53,6 +54,7 @@ public class TelegramService extends TelegramBot {
         this.boxDao = boxDao;
         this.unreadMessages = new ArrayList<>();
         this.unreadPictures = new ArrayList<>();
+        this.unreadVideos = new ArrayList<>();
 
         setUpdatesListener(this::processUpdates);
     }
@@ -69,20 +71,18 @@ public class TelegramService extends TelegramBot {
     }
 
     private void processMessage(Message message) {
-        String text = message.text();
-        if (text != null) {
-            processTextMessage(message, text);
-        } else {
-            List<PhotoSize> photos = Arrays.asList(message.photo());
-            PhotoSize photo = photos.get(photos.size() - 1);
-            String fileId = photo.fileId();
-            GetFile getFile = new GetFile(fileId);
-            unreadPictures.add(getFile);
+        if (message.text() != null) {
+            processTextMessage(message);
+        } else if (message.photo() != null) {
+            processPhotoMessage(message);
+        } else if (message.video() != null) {
+            processVideoMessage(message);
         }
     }
 
-    private void processTextMessage(Message message, String text) {
+    private void processTextMessage(Message message) {
         Chat chat = message.chat();
+        String text = message.text();
 
         if (text.equals(REGISTER_COMMAND)) processRegisterRequest(chat);
         else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken();
@@ -92,6 +92,17 @@ public class TelegramService extends TelegramBot {
             LOGGER.info("Illegal Access to Bot from Chat: {}", chat);
             sendMessage(chat.id(), ANSWER_ACCESS_DENIED);
         }
+    }
+
+    private void processPhotoMessage(Message message) {
+        List<PhotoSize> photos = Arrays.asList(message.photo());
+        PhotoSize photo = photos.get(photos.size() - 1);
+        unreadPictures.add(new GetFile(photo.fileId()));
+    }
+
+    private void processVideoMessage(Message message) {
+        Video video = message.video();
+        unreadVideos.add(new GetFile(video.fileId()));
     }
 
     private boolean isValidPublisher(Long publisherId) {
@@ -143,6 +154,10 @@ public class TelegramService extends TelegramBot {
 
     public List<GetFile> getUnreadPictures() {
         return unreadPictures;
+    }
+
+    public List<GetFile> getUnreadVideos() {
+        return unreadVideos;
     }
 
     public GetFileResponse getFile(GetFile fileRequest) {
