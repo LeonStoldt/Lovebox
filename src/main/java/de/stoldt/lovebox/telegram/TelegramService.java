@@ -27,6 +27,8 @@ import java.util.List;
 @Service
 public class TelegramService extends TelegramBot {
 
+    private static Logger LOGGER = LoggerFactory.getLogger(TelegramService.class);
+
     private static final String REGISTER_COMMAND = "/register@Box";
     private static final String UNREGISTER_COMMAND = "/unregisterBox";
     public static final String ANSWER_REGISTERED_SUCCESSFULLY = "You have registered successfully. The following messages will be directly forwarded to the box";
@@ -34,17 +36,19 @@ public class TelegramService extends TelegramBot {
     public static final String ANSWER_ACCESS_DENIED = "Access denied";
     public static final String ANSWER_INSERT_TOKEN = "Please insert the generated Token.";
     public static final String ANSWER_UNREGISTERED_BOX_FAILED = "Du bist nicht registriert und kannst dich deshalb auch nicht abmelden.";
-    private static Logger LOGGER = LoggerFactory.getLogger(TelegramService.class);
 
     private PublisherDao publisherDao;
     private BoxDao boxDao;
     private ArrayList<Message> unreadMessages;
-    private ArrayList<File> unreadPictures;
+    private ArrayList<GetFile> unreadPictures;
+
+    private final String apiToken;
 
     @Autowired
-    public TelegramService(@Value("${telegram.token}") String botToken, BoxDao boxDao, PublisherDao publisherDao) {
-        super(botToken);
 
+    public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao, PublisherDao publisherDao) {
+        super(apiToken);
+        this.apiToken = apiToken;
         this.publisherDao = publisherDao;
         this.boxDao = boxDao;
         this.unreadMessages = new ArrayList<>();
@@ -73,9 +77,7 @@ public class TelegramService extends TelegramBot {
             PhotoSize photo = photos.get(photos.size() - 1);
             String fileId = photo.fileId();
             GetFile getFile = new GetFile(fileId);
-            GetFileResponse response = execute(getFile);
-            File picture = response.file();
-            unreadPictures.add(picture);
+            unreadPictures.add(getFile);
         }
     }
 
@@ -139,7 +141,15 @@ public class TelegramService extends TelegramBot {
         return unreadMessages;
     }
 
-    public List<File> getUnreadPictures() {
+    public List<GetFile> getUnreadPictures() {
         return unreadPictures;
+    }
+
+    public GetFileResponse getFile(GetFile fileRequest) {
+        return execute(fileRequest);
+    }
+
+    public String getApiToken() {
+        return apiToken;
     }
 }

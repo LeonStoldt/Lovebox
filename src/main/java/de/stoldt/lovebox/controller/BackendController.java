@@ -1,9 +1,12 @@
 package de.stoldt.lovebox.controller;
 
-import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.request.GetFile;
+import com.pengrad.telegrambot.response.GetFileResponse;
 import de.stoldt.lovebox.persistence.dao.BoxDao;
 import de.stoldt.lovebox.telegram.TelegramService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,14 +17,19 @@ import java.util.List;
 @Controller
 public class BackendController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BackendController.class);
     private static final String DEFAULT_MESSAGE = "Keine neuen Nachrichten...";
+    private static final String GET_FILE_URL = "https://api.telegram.org/file/bot%s/%s";
+
+    private final TelegramService telegramService;
 
     private final List<Message> unreadMessages;
-    private final List<File> unreadPictures;
+    private final List<GetFile> unreadPictures;
     private final BoxDao boxDao;
 
     @Autowired
     public BackendController(TelegramService telegramService, BoxDao boxDao) {
+        this.telegramService = telegramService;
         this.unreadMessages = telegramService.getUnreadMessages();
         this.unreadPictures = telegramService.getUnreadPictures();
         this.boxDao = boxDao;
@@ -30,8 +38,7 @@ public class BackendController {
     @GetMapping("/")
     public String showMessage(Model model) {
         if (!unreadMessages.isEmpty()) {
-            Message message = unreadMessages.remove(0);
-            model.addAttribute("message", message.text());
+            model.addAttribute("message", unreadMessages.remove(0).text());
 
         } else {
 
@@ -41,9 +48,15 @@ public class BackendController {
             }
 
             if (!unreadPictures.isEmpty()) {
-                File photo = unreadPictures.remove(0);
-                model.addAttribute("picture", photo);
-                return "picture";
+                GetFile fileRequest = unreadPictures.remove(0);
+                GetFileResponse fileResponse = telegramService.getFile(fileRequest);
+                if (fileResponse.isOk()) {
+                    String fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), fileResponse.file().filePath());
+                    model.addAttribute("fileUrl", fileUrl);
+                    return "picture";
+                } else {
+                    LOGGER.warn("Received status code: {} from getFile {}", fileResponse.errorCode(), fileRequest);
+                }
             }
 
             model.addAttribute("message", DEFAULT_MESSAGE);
