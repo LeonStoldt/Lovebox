@@ -6,7 +6,6 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.model.Video;
 import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetFileResponse;
@@ -39,9 +38,10 @@ public class TelegramService extends TelegramBot {
 
     private PublisherDao publisherDao;
     private BoxDao boxDao;
-    private ArrayList<Message> unreadMessages;
-    private ArrayList<GetFile> unreadPictures;
-    private ArrayList<GetFile> unreadVideos;
+    private final List<Message> unreadMessages;
+    private final List<GetFile> unreadPictures;
+    private final List<GetFile> unreadVideos;
+    private final List<GetFile> unreadAudios;
 
     private final String apiToken;
 
@@ -55,6 +55,7 @@ public class TelegramService extends TelegramBot {
         this.unreadMessages = new ArrayList<>();
         this.unreadPictures = new ArrayList<>();
         this.unreadVideos = new ArrayList<>();
+        this.unreadAudios = new ArrayList<>();
 
         setUpdatesListener(this::processUpdates);
     }
@@ -64,7 +65,6 @@ public class TelegramService extends TelegramBot {
             Message message = (update.editedMessage() != null)
                     ? update.editedMessage()
                     : update.message();
-            LOGGER.info("received message: {} with data: {}", message.text(), message);
             processMessage(message);
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
@@ -73,10 +73,16 @@ public class TelegramService extends TelegramBot {
     private void processMessage(Message message) {
         if (message.text() != null) {
             processTextMessage(message);
+            LOGGER.info("received text message: {} with data: {}", message.text(), message);
         } else if (message.photo() != null) {
             processPhotoMessage(message);
-        } else if (message.video() != null) {
+            LOGGER.info("received photo message: {} with data: {}", message.photo(), message);
+        } else if (message.video() != null || message.animation() != null) {
             processVideoMessage(message);
+            LOGGER.info("received video message: {} with data: {}", message.video(), message);
+        } else if (message.voice() != null || message.audio() != null) {
+            processAudioMessage(message);
+            LOGGER.info("received audio message: {} with data: {}", message.audio(), message);
         }
     }
 
@@ -101,8 +107,17 @@ public class TelegramService extends TelegramBot {
     }
 
     private void processVideoMessage(Message message) {
-        Video video = message.video();
-        unreadVideos.add(new GetFile(video.fileId()));
+        String fileId = message.video() != null
+                ? message.video().fileId()
+                : message.animation().fileId();
+        unreadVideos.add(new GetFile(fileId));
+    }
+
+    private void processAudioMessage(Message message) {
+        String fileId = message.voice() != null
+                ? message.voice().fileId()
+                : message.audio().fileId();
+        unreadAudios.add(new GetFile(fileId));
     }
 
     private boolean isValidPublisher(Long publisherId) {
@@ -166,5 +181,9 @@ public class TelegramService extends TelegramBot {
 
     public String getApiToken() {
         return apiToken;
+    }
+
+    public List<GetFile> getUnreadAudios() {
+        return unreadAudios;
     }
 }

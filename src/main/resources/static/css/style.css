@@ -41,6 +41,12 @@ body {
     object-fit: contain;
 }
 
+.video {
+    max-height: 100vh;
+    max-width: 100vw;
+    object-fit: contain;
+}
+
 .register-area {
     padding: 0 20%;
     text-align: center;

@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Lovebox Display</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"/>
+</head>
+
+<body>
+    <div>
+        <audio controls autoplay loop>
+            <source th:src="${fileUrl}" type="audio/ogg">
+            <source th:src="${fileUrl}" type="audio/mpeg">
+            <source th:src="${fileUrl}" type="audio/wav">
+            <p>Your browser doesn't support HTML5 audio.</p>
+        </audio>
+    </div>
+</body>
+</html>

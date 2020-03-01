@@ -9,8 +9,11 @@
 <!-- You need to allow audio and scripts on this website to use the autoplay feature with activated audio -->
 <body>
 <div>
-    <video id="video" autoplay loop>
+    <video class="video" autoplay loop>
         <source th:src="${fileUrl}" type="video/mp4">
+        <source th:src="${fileUrl}" type="video/webm">
+        <source th:src="${fileUrl}" type="video/ogg">
+        <p>Your browser doesn't support HTML5 video.</p>
     </video>
 </div>
 </body>

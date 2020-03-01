@@ -26,6 +26,7 @@ public class BackendController {
     private final List<Message> unreadMessages;
     private final List<GetFile> unreadPictures;
     private final List<GetFile> unreadVideos;
+    private final List<GetFile> unreadAudios;
     private final BoxDao boxDao;
 
     @Autowired
@@ -34,6 +35,7 @@ public class BackendController {
         this.unreadMessages = telegramService.getUnreadMessages();
         this.unreadPictures = telegramService.getUnreadPictures();
         this.unreadVideos = telegramService.getUnreadVideos();
+        this.unreadAudios = telegramService.getUnreadAudios();
         this.boxDao = boxDao;
     }
 
@@ -65,9 +67,23 @@ public class BackendController {
                 GetFile fileRequest = unreadVideos.remove(0);
                 GetFileResponse fileResponse = telegramService.getFile(fileRequest);
                 if (fileResponse.isOk()) {
-                    String fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), fileResponse.file().filePath());
+                    String filePath = fileResponse.file().filePath();
+                    String fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), filePath);
                     model.addAttribute("fileUrl", fileUrl);
                     return "video";
+                } else {
+                    LOGGER.warn("Received status code: {} from getFile {}", fileResponse.errorCode(), fileRequest);
+                }
+            }
+
+            if (!unreadAudios.isEmpty()) {
+                GetFile fileRequest = unreadAudios.remove(0);
+                GetFileResponse fileResponse = telegramService.getFile(fileRequest);
+                if (fileResponse.isOk()) {
+                    String filePath = fileResponse.file().filePath();
+                    String fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), filePath);
+                    model.addAttribute("fileUrl", fileUrl);
+                    return "audio";
                 } else {
                     LOGGER.warn("Received status code: {} from getFile {}", fileResponse.errorCode(), fileRequest);
                 }
