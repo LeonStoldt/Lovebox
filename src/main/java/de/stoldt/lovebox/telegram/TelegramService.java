@@ -30,18 +30,19 @@ import java.util.List;
 @Service
 public class TelegramService extends TelegramBot {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(TelegramService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TelegramService.class);
+    private static final int MAX_DISPLAYED_SIGNS = 750;
 
     // commands
     private static final String REGISTER_COMMAND = "/register@Box";
     private static final String UNREGISTER_COMMAND = "/unregisterBox";
 
     // answer
-    public static final String ANSWER_REGISTERED_SUCCESSFULLY = "You have registered successfully. The following messages will be directly forwarded to the box";
-    public static final String ANSWER_UNREGISTERED_BOX_SUCCESSFULLY = "Die Registrierung der Box wurde aufgehoben";
-    public static final String ANSWER_ACCESS_DENIED = "Access denied";
-    public static final String ANSWER_INSERT_TOKEN = "Please insert the generated Token.";
-    public static final String ANSWER_UNREGISTERED_BOX_FAILED = "Du bist nicht registriert und kannst dich deshalb auch nicht abmelden.";
+    private static final String ANSWER_REGISTERED_SUCCESSFULLY = "You have registered successfully. The following messages will be directly forwarded to the box";
+    private static final String ANSWER_UNREGISTERED_BOX_SUCCESSFULLY = "Die Registrierung der Box wurde aufgehoben";
+    private static final String ANSWER_ACCESS_DENIED = "Access denied";
+    private static final String ANSWER_INSERT_TOKEN = "Please insert the generated Token.";
+    private static final String ANSWER_UNREGISTERED_BOX_FAILED = "Du bist nicht registriert und kannst dich deshalb auch nicht abmelden.";
 
     private PublisherDao publisherDao;
     private BoxDao boxDao;
@@ -84,10 +85,20 @@ public class TelegramService extends TelegramBot {
         if (text.equals(REGISTER_COMMAND)) processRegisterRequest(chat);
         else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken();
         else if (text.equals(UNREGISTER_COMMAND)) unRegisterPublisherWithValidToken(chat.id());
-        else if (isValidPublisher(chat.id())) unreadAbstractMessages.add(new TextMessage(text));
+        else if (isValidPublisher(chat.id())) addTextToUnreadMessages(text);
         else {
             LOGGER.info("Illegal Access to Bot from Chat: {}", chat);
             sendMessage(chat.id(), ANSWER_ACCESS_DENIED);
+        }
+    }
+
+    private void addTextToUnreadMessages(String text) {
+        if (text.length() > MAX_DISPLAYED_SIGNS) {
+            Arrays.stream(text.split(String.format("(?<=\\G.{%d,}\\s)", MAX_DISPLAYED_SIGNS)))
+                    .map(TextMessage::new)
+                    .forEach(unreadAbstractMessages::add);
+        } else {
+            unreadAbstractMessages.add(new TextMessage(text));
         }
     }
 
