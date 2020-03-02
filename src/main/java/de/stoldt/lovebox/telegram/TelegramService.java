@@ -13,6 +13,10 @@ import de.stoldt.lovebox.bo.Box;
 import de.stoldt.lovebox.bo.Publisher;
 import de.stoldt.lovebox.persistence.dao.BoxDao;
 import de.stoldt.lovebox.persistence.dao.PublisherDao;
+import de.stoldt.lovebox.telegram.message.AbstractMessage;
+import de.stoldt.lovebox.telegram.message.DataMessage;
+import de.stoldt.lovebox.telegram.message.MessageType;
+import de.stoldt.lovebox.telegram.message.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +32,11 @@ public class TelegramService extends TelegramBot {
 
     private static Logger LOGGER = LoggerFactory.getLogger(TelegramService.class);
 
+    // commands
     private static final String REGISTER_COMMAND = "/register@Box";
     private static final String UNREGISTER_COMMAND = "/unregisterBox";
+
+    // answer
     public static final String ANSWER_REGISTERED_SUCCESSFULLY = "You have registered successfully. The following messages will be directly forwarded to the box";
     public static final String ANSWER_UNREGISTERED_BOX_SUCCESSFULLY = "Die Registrierung der Box wurde aufgehoben";
     public static final String ANSWER_ACCESS_DENIED = "Access denied";
@@ -38,11 +45,7 @@ public class TelegramService extends TelegramBot {
 
     private PublisherDao publisherDao;
     private BoxDao boxDao;
-    private final List<Message> unreadMessages;
-    private final List<GetFile> unreadPictures;
-    private final List<GetFile> unreadVideos;
-    private final List<GetFile> unreadAudios;
-
+    private final List<AbstractMessage> unreadAbstractMessages;
     private final String apiToken;
 
     @Autowired
@@ -52,76 +55,40 @@ public class TelegramService extends TelegramBot {
         this.apiToken = apiToken;
         this.publisherDao = publisherDao;
         this.boxDao = boxDao;
-        this.unreadMessages = new ArrayList<>();
-        this.unreadPictures = new ArrayList<>();
-        this.unreadVideos = new ArrayList<>();
-        this.unreadAudios = new ArrayList<>();
+        this.unreadAbstractMessages = new ArrayList<>();
 
         setUpdatesListener(this::processUpdates);
     }
 
     private int processUpdates(List<Update> updates) {
         updates.forEach(update -> {
-            Message message = (update.editedMessage() != null)
-                    ? update.editedMessage()
-                    : update.message();
+            Message message = update.editedMessage() != null ? update.editedMessage() : update.message();
             processMessage(message);
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
     private void processMessage(Message message) {
-        if (message.text() != null) {
-            processTextMessage(message);
-            LOGGER.info("received text message: {} with data: {}", message.text(), message);
-        } else if (message.photo() != null) {
-            processPhotoMessage(message);
-            LOGGER.info("received photo message: {} with data: {}", message.photo(), message);
-        } else if (message.video() != null || message.animation() != null) {
-            processVideoMessage(message);
-            LOGGER.info("received video message: {} with data: {}", message.video(), message);
-        } else if (message.voice() != null || message.audio() != null) {
-            processAudioMessage(message);
-            LOGGER.info("received audio message: {} with data: {}", message.audio(), message);
-        }
+        if (message.text() != null) processTextMessage(message);
+        else if (message.photo() != null) processPhotoMessage(message);
+        else if (message.video() != null || message.animation() != null) processVideoMessage(message);
+        else if (message.voice() != null || message.audio() != null) processAudioMessage(message);
     }
 
+    // region process MessageTypes
     private void processTextMessage(Message message) {
         Chat chat = message.chat();
         String text = message.text();
+        LOGGER.info("received text message: {} with data: {}", text, chat);
 
         if (text.equals(REGISTER_COMMAND)) processRegisterRequest(chat);
         else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken();
         else if (text.equals(UNREGISTER_COMMAND)) unRegisterPublisherWithValidToken(chat.id());
-        else if (isValidPublisher(chat.id())) unreadMessages.add(message);
+        else if (isValidPublisher(chat.id())) unreadAbstractMessages.add(new TextMessage(text));
         else {
             LOGGER.info("Illegal Access to Bot from Chat: {}", chat);
             sendMessage(chat.id(), ANSWER_ACCESS_DENIED);
         }
-    }
-
-    private void processPhotoMessage(Message message) {
-        List<PhotoSize> photos = Arrays.asList(message.photo());
-        PhotoSize photo = photos.get(photos.size() - 1);
-        unreadPictures.add(new GetFile(photo.fileId()));
-    }
-
-    private void processVideoMessage(Message message) {
-        String fileId = message.video() != null
-                ? message.video().fileId()
-                : message.animation().fileId();
-        unreadVideos.add(new GetFile(fileId));
-    }
-
-    private void processAudioMessage(Message message) {
-        String fileId = message.voice() != null
-                ? message.voice().fileId()
-                : message.audio().fileId();
-        unreadAudios.add(new GetFile(fileId));
-    }
-
-    private boolean isValidPublisher(Long publisherId) {
-        return boxDao.getBox().getPublisherId() != null && boxDao.getBox().getPublisherId().equals(publisherId);
     }
 
     private void processRegisterRequest(Chat chat) {
@@ -159,31 +126,58 @@ public class TelegramService extends TelegramBot {
         }
     }
 
+    private boolean isValidPublisher(Long publisherId) {
+        return boxDao.getBox().getPublisherId() != null && boxDao.getBox().getPublisherId().equals(publisherId);
+    }
+
+    private void processPhotoMessage(Message message) {
+        List<PhotoSize> photos = Arrays.asList(message.photo());
+        if (!photos.isEmpty()) {
+            PhotoSize photo = photos.get(photos.size() - 1);
+            unreadAbstractMessages.add(new DataMessage(MessageType.PICTURE, new GetFile(photo.fileId())));
+            LOGGER.info("received photo message: {} with data: {}", message.photo(), message.chat());
+        }
+    }
+
+    private void processVideoMessage(Message message) {
+        String fileId;
+        if (message.video() != null) {
+            fileId = message.video().fileId();
+            LOGGER.info("received video message: {} with data: {}", message.video(), message);
+        } else {
+            fileId = message.animation().fileId();
+            LOGGER.info("received animation message: {} with data: {}", message.animation(), message);
+        }
+        unreadAbstractMessages.add(new DataMessage(MessageType.VIDEO, new GetFile(fileId)));
+    }
+
+    private void processAudioMessage(Message message) {
+        String fileId;
+
+        if (message.voice() != null) {
+            fileId = message.voice().fileId();
+            LOGGER.info("received audio message: {} with data: {}", message.voice(), message);
+        } else {
+            fileId = message.audio().fileId();
+            LOGGER.info("received audio message: {} with data: {}", message.audio(), message);
+        }
+        unreadAbstractMessages.add(new DataMessage(MessageType.AUDIO, new GetFile(fileId)));
+    }
+    // endregion
+
     public void sendMessage(Long chatId, String message) {
         execute(new SendMessage(chatId, message));
-    }
-
-    public List<Message> getUnreadMessages() {
-        return unreadMessages;
-    }
-
-    public List<GetFile> getUnreadPictures() {
-        return unreadPictures;
-    }
-
-    public List<GetFile> getUnreadVideos() {
-        return unreadVideos;
     }
 
     public GetFileResponse getFile(GetFile fileRequest) {
         return execute(fileRequest);
     }
 
-    public String getApiToken() {
-        return apiToken;
+    public List<AbstractMessage> getUnreadAbstractMessages() {
+        return unreadAbstractMessages;
     }
 
-    public List<GetFile> getUnreadAudios() {
-        return unreadAudios;
+    public String getApiToken() {
+        return apiToken;
     }
 }

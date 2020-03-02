@@ -1,7 +1,8 @@
 package de.stoldt.lovebox.bo;
 
-import de.stoldt.lovebox.TokenGenerator;
 import de.stoldt.lovebox.persistence.entity.BoxEntity;
+
+import java.util.UUID;
 
 public class Box {
 
@@ -9,7 +10,7 @@ public class Box {
     private Long publisherId;
 
     public Box() {
-        this.token = TokenGenerator.generate();
+        this.token = UUID.randomUUID().toString();
     }
 
     public Box(BoxEntity entity) {
