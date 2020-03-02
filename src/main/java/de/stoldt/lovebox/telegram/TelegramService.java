@@ -94,9 +94,15 @@ public class TelegramService extends TelegramBot {
 
     private void addTextToUnreadMessages(String text) {
         if (text.length() > MAX_DISPLAYED_SIGNS) {
-            Arrays.stream(text.split(String.format("(?<=\\G.{%d,}\\s)", MAX_DISPLAYED_SIGNS)))
-                    .map(TextMessage::new)
-                    .forEach(unreadAbstractMessages::add);
+            unreadAbstractMessages.add(new TextMessage(Arrays
+                    .stream(text.split("(?<= )"))
+                    .reduce((firstText, secondText) -> {
+                        if (firstText.length() + secondText.length() <= 750) {
+                            return firstText + secondText;
+                        }
+                        unreadAbstractMessages.add(new TextMessage(firstText));
+                        return secondText;
+                    }).orElse(null)));
         } else {
             unreadAbstractMessages.add(new TextMessage(text));
         }
