@@ -43,22 +43,13 @@ public class BackendController {
         if (!unreadAbstractMessages.isEmpty()) {
             AbstractMessage message = unreadAbstractMessages.remove(0);
 
-            switch (message.getMessageType()) {
-                case TEXT:
-                    TextMessage textMessage = (TextMessage) message;
-                    model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, textMessage.getText());
-                    return MessageType.TEXT.getTemplateName();
-                case PICTURE:
-                    model.addAttribute(THYMELEAF_VARIABLE_FILE_URL, getFileUrl((DataMessage) message));
-                    return MessageType.PICTURE.getTemplateName();
-                case AUDIO:
-                    model.addAttribute(THYMELEAF_VARIABLE_FILE_URL, getFileUrl((DataMessage) message));
-                    return MessageType.AUDIO.getTemplateName();
-                case VIDEO:
-                    model.addAttribute(THYMELEAF_VARIABLE_FILE_URL, getFileUrl((DataMessage) message));
-                    return MessageType.VIDEO.getTemplateName();
-                default:
-                    break;
+            if (message.getMessageType().equals(MessageType.TEXT)) {
+                TextMessage textMessage = (TextMessage) message;
+                model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, textMessage.getText());
+                return MessageType.TEXT.getTemplateName();
+            } else {
+                model.addAttribute(THYMELEAF_VARIABLE_FILE_URL, getFileUrl((DataMessage) message));
+                return message.getMessageType().getTemplateName();
             }
         } else if (boxDao.getBox().getPublisherId() == null) {
             model.addAttribute(THYMELEAF_VARIABLE_UUID, boxDao.getBox().getToken());
@@ -73,7 +64,7 @@ public class BackendController {
         GetFileResponse fileResponse = telegramService.getFile(message.getFile());
 
         if (fileResponse.isOk()) {
-             fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), fileResponse.file().filePath());
+            fileUrl = String.format(GET_FILE_URL, telegramService.getApiToken(), fileResponse.file().filePath());
         } else {
             LOGGER.warn("Received status code: {} from getFile {}", fileResponse.errorCode(), message.getFile());
             fileUrl = "/fallback picture";
