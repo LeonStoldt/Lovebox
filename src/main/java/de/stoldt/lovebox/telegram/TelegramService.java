@@ -43,6 +43,7 @@ public class TelegramService extends TelegramBot {
     private static final String ANSWER_ACCESS_DENIED = "Access denied";
     private static final String ANSWER_INSERT_TOKEN = "Please insert the generated Token.";
     private static final String ANSWER_UNREGISTERED_BOX_FAILED = "Du bist nicht registriert und kannst dich deshalb auch nicht abmelden.";
+    private static final String ANSWER_UNSUPPORTED_MEDIA_TYPE = "Unsupported Media Type";
 
     private PublisherDao publisherDao;
     private BoxDao boxDao;
@@ -74,6 +75,7 @@ public class TelegramService extends TelegramBot {
         else if (message.photo() != null) processPhotoMessage(message);
         else if (message.video() != null || message.animation() != null) processVideoMessage(message);
         else if (message.voice() != null || message.audio() != null) processAudioMessage(message);
+        else sendMessage(message.chat().id(), ANSWER_UNSUPPORTED_MEDIA_TYPE);
     }
 
     // region process MessageTypes
