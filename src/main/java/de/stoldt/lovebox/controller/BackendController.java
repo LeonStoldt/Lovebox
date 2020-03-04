@@ -14,34 +14,29 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.List;
-
 @Controller
 public class BackendController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BackendController.class);
-    private static final String DEFAULT_MESSAGE = "Keine neuen Nachrichten...";
+    private static final String DEFAULT_TEXT = "Keine neuen Nachrichten...";
     private static final String GET_FILE_URL = "https://api.telegram.org/file/bot%s/%s";
     private static final String THYMELEAF_VARIABLE_MESSAGE = "message";
     private static final String THYMELEAF_VARIABLE_FILE_URL = "fileUrl";
     private static final String THYMELEAF_VARIABLE_UUID = "uuid";
 
     private final TelegramService telegramService;
-
-    private final List<AbstractMessage> unreadAbstractMessages;
     private final BoxDao boxDao;
 
     @Autowired
     public BackendController(TelegramService telegramService, BoxDao boxDao) {
         this.telegramService = telegramService;
-        this.unreadAbstractMessages = telegramService.getUnreadAbstractMessages();
         this.boxDao = boxDao;
     }
 
     @GetMapping("/")
     public String showMessage(Model model) {
-        if (!unreadAbstractMessages.isEmpty()) {
-            AbstractMessage message = unreadAbstractMessages.remove(0);
+        if (!telegramService.getUnreadAbstractMessages().isEmpty()) {
+            AbstractMessage message = telegramService.removeMessage();
 
             if (message.getMessageType().equals(MessageType.TEXT)) {
                 TextMessage textMessage = (TextMessage) message;
@@ -55,7 +50,7 @@ public class BackendController {
             model.addAttribute(THYMELEAF_VARIABLE_UUID, boxDao.getBox().getToken());
             return "register";
         }
-        model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_MESSAGE);
+        model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);
         return MessageType.TEXT.getTemplateName();
     }
 

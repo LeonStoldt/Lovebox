@@ -11,6 +11,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetFileResponse;
 import de.stoldt.lovebox.bo.Box;
 import de.stoldt.lovebox.bo.Publisher;
+import de.stoldt.lovebox.gpio.GpioCallback;
 import de.stoldt.lovebox.persistence.dao.BoxDao;
 import de.stoldt.lovebox.persistence.dao.PublisherDao;
 import de.stoldt.lovebox.telegram.message.AbstractMessage;
@@ -45,18 +46,20 @@ public class TelegramService extends TelegramBot {
     private static final String ANSWER_UNREGISTERED_BOX_FAILED = "Du bist nicht registriert und kannst dich deshalb auch nicht abmelden.";
     private static final String ANSWER_UNSUPPORTED_MEDIA_TYPE = "Unsupported Media Type";
 
-    private PublisherDao publisherDao;
-    private BoxDao boxDao;
-    private final List<AbstractMessage> unreadAbstractMessages;
     private final String apiToken;
+    private BoxDao boxDao;
+    private PublisherDao publisherDao;
+    private final GpioCallback gpioCallback;
+    private final List<AbstractMessage> unreadAbstractMessages;
 
     @Autowired
 
-    public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao, PublisherDao publisherDao) {
+    public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao, PublisherDao publisherDao, GpioCallback gpioCallback) {
         super(apiToken);
         this.apiToken = apiToken;
         this.publisherDao = publisherDao;
         this.boxDao = boxDao;
+        this.gpioCallback = gpioCallback;
         this.unreadAbstractMessages = new ArrayList<>();
 
         setUpdatesListener(this::processUpdates);
@@ -96,17 +99,17 @@ public class TelegramService extends TelegramBot {
 
     private void addTextToUnreadMessages(String text) {
         if (text.length() > MAX_DISPLAYED_SIGNS) {
-            unreadAbstractMessages.add(new TextMessage(Arrays
+            addMessage(new TextMessage(Arrays
                     .stream(text.split("(?<= )"))
                     .reduce((firstText, secondText) -> {
                         if (firstText.length() + secondText.length() <= 750) {
                             return firstText + secondText;
                         }
-                        unreadAbstractMessages.add(new TextMessage(firstText));
+                        addMessage(new TextMessage(firstText));
                         return secondText;
                     }).orElse(null)));
         } else {
-            unreadAbstractMessages.add(new TextMessage(text));
+            addMessage(new TextMessage(text));
         }
     }
 
@@ -153,7 +156,7 @@ public class TelegramService extends TelegramBot {
         List<PhotoSize> photos = Arrays.asList(message.photo());
         if (!photos.isEmpty()) {
             PhotoSize photo = photos.get(photos.size() - 1);
-            unreadAbstractMessages.add(new DataMessage(MessageType.PICTURE, new GetFile(photo.fileId())));
+            addMessage(new DataMessage(MessageType.PICTURE, new GetFile(photo.fileId())));
             LOGGER.info("received photo message: {} with data: {}", message.photo(), message.chat());
         }
     }
@@ -167,7 +170,7 @@ public class TelegramService extends TelegramBot {
             fileId = message.animation().fileId();
             LOGGER.info("received animation message: {} with data: {}", message.animation(), message);
         }
-        unreadAbstractMessages.add(new DataMessage(MessageType.VIDEO, new GetFile(fileId)));
+        addMessage(new DataMessage(MessageType.VIDEO, new GetFile(fileId)));
     }
 
     private void processAudioMessage(Message message) {
@@ -180,9 +183,24 @@ public class TelegramService extends TelegramBot {
             fileId = message.audio().fileId();
             LOGGER.info("received audio message: {} with data: {}", message.audio(), message);
         }
-        unreadAbstractMessages.add(new DataMessage(MessageType.AUDIO, new GetFile(fileId)));
+        addMessage(new DataMessage(MessageType.AUDIO, new GetFile(fileId)));
     }
     // endregion
+
+    private void addMessage(AbstractMessage message) {
+        unreadAbstractMessages.add(message);
+        if (!gpioCallback.ledsAreActive()) {
+            gpioCallback.startLeds();
+        }
+    }
+
+    public AbstractMessage removeMessage() {
+        AbstractMessage removedMessage = unreadAbstractMessages.remove(0);
+        if (unreadAbstractMessages.isEmpty()) {
+            gpioCallback.stopLeds();
+        }
+        return removedMessage;
+    }
 
     public void sendMessage(Long chatId, String message) {
         execute(new SendMessage(chatId, message));
