@@ -35,7 +35,7 @@ public class BackendController {
 
     @GetMapping("/")
     public String showMessage(Model model) {
-        if (!telegramService.getUnreadAbstractMessages().isEmpty()) {
+        if (!telegramService.getUnreadAbstractMessages().isEmpty()) { // process next message
             AbstractMessage message = telegramService.removeMessage();
 
             if (message.getMessageType().equals(MessageType.TEXT)) {
@@ -46,12 +46,15 @@ public class BackendController {
                 model.addAttribute(THYMELEAF_VARIABLE_FILE_URL, getFileUrl((DataMessage) message));
                 return message.getMessageType().getTemplateName();
             }
-        } else if (boxDao.getBox().getPublisherId() == null) {
+
+        } else if (boxDao.getBox().getPublisherId() == null) { // register at box if no one is registered yet
             model.addAttribute(THYMELEAF_VARIABLE_UUID, boxDao.getBox().getToken());
             return "register";
+
+        } else { // no messages available
+            model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);
+            return MessageType.TEXT.getTemplateName();
         }
-        model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);
-        return MessageType.TEXT.getTemplateName();
     }
 
     private String getFileUrl(DataMessage message) {
