@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.4.RELEASE</version>
+		<version>2.2.5.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>de.stoldt</groupId>
@@ -15,7 +15,7 @@
 	<description>This project will be the endpoint of the Lovebox</description>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>1.8</java.version>
 	</properties>
 
 	<dependencies>
@@ -34,7 +34,6 @@
 			<artifactId>pi4j-core</artifactId>
 			<version>1.2</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>com.github.pengrad</groupId>
