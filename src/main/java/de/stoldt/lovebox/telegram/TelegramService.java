@@ -88,7 +88,7 @@ public class TelegramService extends TelegramBot {
         LOGGER.info("received text message: {} with data: {}", text, chat);
 
         if (text.equals(REGISTER_COMMAND)) processRegisterRequest(chat);
-        else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken();
+        else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken(chat.id());
         else if (text.equals(UNREGISTER_COMMAND)) unRegisterPublisherWithValidToken(chat.id());
         else if (isValidPublisher(chat.id())) addTextToUnreadMessages(text);
         else {
@@ -125,16 +125,21 @@ public class TelegramService extends TelegramBot {
         }
     }
 
-    private void registerPublisherWithValidToken() {
+    private void registerPublisherWithValidToken(Long chatId) {
+        String answer;
         Publisher publisher = publisherDao.getPublisher();
-        Box box = boxDao.getBox();
-        publisher.setToken(box.getToken());
-        publisherDao.save(publisher);
+        if (publisher != null) {
+            Box box = boxDao.getBox();
+            publisher.setToken(box.getToken());
+            publisherDao.save(publisher);
 
-        box.setPublisherId(publisher.getChatId());
-        boxDao.save(box);
-
-        sendMessage(publisher.getChatId(), ANSWER_REGISTERED_SUCCESSFULLY);
+            box.setPublisherId(publisher.getChatId());
+            boxDao.save(box);
+            answer = ANSWER_REGISTERED_SUCCESSFULLY;
+        } else {
+            answer = ANSWER_ACCESS_DENIED;
+        }
+        sendMessage(chatId, answer);
     }
 
     private void unRegisterPublisherWithValidToken(Long chatId) {
