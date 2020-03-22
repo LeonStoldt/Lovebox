@@ -16,8 +16,9 @@ then
 fi
 
 # start lovebox program
-cd LOVEBOX_DIR || exit
+cd "$LOVEBOX_DIR" || exit
 git pull
+cp src/main/resources/startup.sh /var/lib/dietpi/dietpi-autostart/lovebox.sh
 mvn clean install
 mvn spring-boot:run &> logs/application.log &
 
