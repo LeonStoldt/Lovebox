@@ -1,6 +1,4 @@
 #!/bin/bash
-sleep 5
-
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install -y git maven midori x11-xserver-utils matchbox unclutter ca-certificates-java java-common
@@ -18,8 +16,7 @@ fi
 # start lovebox program
 cd "$LOVEBOX_DIR" || exit
 git pull
-cp src/main/resources/startup.sh /var/lib/dietpi/dietpi-autostart/lovebox.sh
-mvn clean install
+mvn clean compile
 mvn spring-boot:run &> logs/application.log &
 
 export DISPLAY=:0.0
