@@ -20,9 +20,13 @@ if [ ! -d "$LOVEBOX_DIR" ]; then
 fi
 
 cd "$LOVEBOX_DIR" || exit
-echo "Moved to Lovebox Directory."
-git pull
-mvn clean compile
+echo "Changed WORKING_DIR to Lovebox Directory."
+if git pull | grep -q 'Already up to date.'; then
+  echo "Repository is up to date."
+else
+  echo "Compiling Project."
+  mvn clean compile
+fi
 echo "Starting Lovebox Application. Log of application: /LOVEBOX_DIR/logs/application.log"
 mvn spring-boot:run &>logs/application.log &
 
