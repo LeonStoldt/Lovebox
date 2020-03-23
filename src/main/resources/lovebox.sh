@@ -1,12 +1,12 @@
 #!/bin/bash
-sudo apt-get update
-
+echo "Checking required packages."
 packages=(git maven midori x11-xserver-utils matchbox unclutter ca-certificates-java java-common at-spi2-core)
 for package in "${packages[@]}"; do
   if [ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -c "ok installed")" -eq 0 ]; then
     echo "Installing required package: $package"
     apt-get install "$package"
   fi
+  echo "Package $package is installed."
 done
 
 cd "$HOME" || exit
