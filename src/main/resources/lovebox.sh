@@ -9,8 +9,6 @@ for package in "${packages[@]}"; do
   echo "Package $package is installed."
 done
 
-[ -z "$DISPLAY" ] && echo "Could not found \$DISPLAY. Please add the environment variable to the ~/.bashrc or ~/.profile file" && exit || echo "Found \$DISPLAY"
-
 cd "$HOME" || exit
 LOVEBOX_DIR=$HOME/Desktop/Lovebox
 
