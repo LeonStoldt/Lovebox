@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Checking required packages."
-packages=(git maven midori x11-xserver-utils matchbox unclutter ca-certificates-java java-common at-spi2-core)
+packages=(git maven midori xinit x11-xserver-utils matchbox unclutter ca-certificates-java java-common at-spi2-core)
 for package in "${packages[@]}"; do
   if [ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -c "ok installed")" -eq 0 ]; then
     echo "Installing required package: $package"
@@ -35,15 +35,9 @@ xset s off
 echo "Don't blank the video device."
 xset s noblank
 
+echo "Copying xinit File to \$HOME Folder"
+/bin/cp ./.xinitrc "$HOME"/.xinitrc
 echo "Removing mouse cursor."
 unclutter &
-echo "Starting Window Manager."
-matchbox-window-manager -use_cursor no -use_titlebar no &
-while :; do
-  ps -ef | grep 'midori -e Fullscreen' | grep -v grep >/dev/null 2>&1
-  if [ $? -eq 1 ]; then
-    echo "Startting Midori in Fullscreen mode."
-    midori -e Fullscreen -a http://localhost &
-  fi
-  sleep 1800
-done
+echo "Starting GUI with Browser"
+startx
