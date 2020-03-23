@@ -9,6 +9,8 @@ for package in "${packages[@]}"; do
   echo "Package $package is installed."
 done
 
+[ -z "$DISPLAY" ] && echo "Could not found \$DISPLAY. Please add the environment variable to the ~/.bashrc or ~/.profile file" && exit || echo "Found \$DISPLAY"
+
 cd "$HOME" || exit
 LOVEBOX_DIR=$HOME/Desktop/Lovebox
 
@@ -25,9 +27,6 @@ git pull
 mvn clean compile
 echo "Starting Lovebox Application. Log of application: /LOVEBOX_DIR/logs/application.log"
 mvn spring-boot:run &>logs/application.log &
-
-echo "Exporting DISPLAY"
-export DISPLAY=:0.0
 
 echo "Disable DPMS (Energy Star) features."
 xset -dpms
