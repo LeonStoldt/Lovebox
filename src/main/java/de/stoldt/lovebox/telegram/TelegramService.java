@@ -49,17 +49,16 @@ public class TelegramService extends TelegramBot {
     private final String apiToken;
     private BoxDao boxDao;
     private PublisherDao publisherDao;
-    //private final GpioCallback gpioCallback;
+    private final GpioCallback gpioCallback;
     private final List<AbstractMessage> unreadAbstractMessages;
 
     @Autowired
-    public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao, PublisherDao publisherDao) {
-        // add parameter: , GpioCallback gpioCallback
+    public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao, PublisherDao publisherDao, GpioCallback gpioCallback) {
         super(apiToken);
         this.apiToken = apiToken;
         this.publisherDao = publisherDao;
         this.boxDao = boxDao;
-        //this.gpioCallback = gpioCallback;
+        this.gpioCallback = gpioCallback;
         this.unreadAbstractMessages = new ArrayList<>();
 
         setUpdatesListener(this::processUpdates);
@@ -194,16 +193,16 @@ public class TelegramService extends TelegramBot {
 
     private void addMessage(AbstractMessage message) {
         unreadAbstractMessages.add(message);
-//        if (!gpioCallback.ledsAreActive()) {
-//            gpioCallback.startLeds();
-//        }
+        if (!gpioCallback.ledsAreActive()) {
+            gpioCallback.startLeds();
+        }
     }
 
     public AbstractMessage removeMessage() {
         AbstractMessage removedMessage = unreadAbstractMessages.remove(0);
-//        if (unreadAbstractMessages.isEmpty()) {
-//            gpioCallback.stopLeds();
-//        }
+        if (unreadAbstractMessages.isEmpty()) {
+            gpioCallback.stopLeds();
+        }
         return removedMessage;
     }
 

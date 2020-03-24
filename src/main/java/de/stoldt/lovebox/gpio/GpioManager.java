@@ -6,7 +6,7 @@ import de.stoldt.lovebox.gpio.notification.LedService;
 import de.stoldt.lovebox.gpio.reed.ReedService;
 import org.springframework.stereotype.Controller;
 
-//@Controller
+@Controller
 public class GpioManager implements GpioCallback {
 
     private final LedService leds;

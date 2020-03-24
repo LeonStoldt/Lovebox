@@ -40,7 +40,7 @@ public class ReedService {
             // start display
             runtime.exec("xset -display :0.0 dpms force on ");
             // refresh page
-            runtime.exec("midori -e Reload");
+            runtime.exec("midori -e Reload"); //does not work yet, different command needed
         } catch (IOException e) {
             LOGGER.error("Could not execute shell commands", e);
         }
@@ -51,7 +51,7 @@ public class ReedService {
             // stop display
             runtime.exec("sleep 1 && xset -display :0.0 dpms force off ");
         } catch (IOException e) {
-            LOGGER.error("Could not turn display off", e);
+            LOGGER.error("Could not turn off display", e);
         }
     }
 }
