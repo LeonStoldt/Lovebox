@@ -193,6 +193,7 @@ public class TelegramService extends TelegramBot {
 
     private void addMessage(AbstractMessage message) {
         unreadAbstractMessages.add(message);
+        LOGGER.info("Added message to unread messages.");
         if (!gpioCallback.ledsAreActive()) {
             gpioCallback.startLeds();
         }
@@ -200,6 +201,7 @@ public class TelegramService extends TelegramBot {
 
     public AbstractMessage removeMessage() {
         AbstractMessage removedMessage = unreadAbstractMessages.remove(0);
+        LOGGER.info("Removed message of unread messages.");
         if (unreadAbstractMessages.isEmpty()) {
             gpioCallback.stopLeds();
         }

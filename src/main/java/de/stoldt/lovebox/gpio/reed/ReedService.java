@@ -1,57 +1,53 @@
 package de.stoldt.lovebox.gpio.reed;
 
 import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioPinDigitalInput;
+import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
+import de.stoldt.lovebox.gpio.BashExecutor;
 import de.stoldt.lovebox.gpio.GpioCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 public class ReedService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReedService.class);
-    private final GpioPinDigitalInput reedContact;
+    private final BashExecutor bashExecutor;
 
-    public ReedService(GpioController gpio, GpioCallback callback) {
-        this.reedContact = gpio.provisionDigitalInputPin(RaspiPin.GPIO_02, "Reed Contact");
-        reedContact.addListener(getStateChangeListener(callback));
+    public ReedService(BashExecutor bashExecutor, GpioController gpio, GpioCallback callback) {
+        this.bashExecutor = bashExecutor;
+        gpio.provisionDigitalInputPin(RaspiPin.GPIO_02, "Reed Contact")
+                .addListener(getStateChangeListener(callback));
     }
 
     private GpioPinListenerDigital getStateChangeListener(GpioCallback callback) {
         return event -> {
-            Runtime runtime = Runtime.getRuntime();
             boolean isBoxOpen = event.getState().isLow();
-            LOGGER.info("State on Pin {} changed to {}", event.getPin(), event.getState().getName());
+            LOGGER.info("State on Pin {} changed to {} - Box is {}",
+                    event.getPin(),
+                    event.getState().getName(),
+                    event.getState() == PinState.HIGH
+                            ? "CLOSED"
+                            : "OPENED");
             if (isBoxOpen) {
-                stopBlinkingAndShowDisplay(callback, runtime);
+                stopBlinkingAndShowDisplay(callback);
             } else {
-                turnOffDisplay(runtime);
+                turnOffDisplay();
             }
         };
     }
 
-    private void stopBlinkingAndShowDisplay(GpioCallback callback, Runtime runtime) {
-        // -> leds off
+    private void stopBlinkingAndShowDisplay(GpioCallback callback) {
+        LOGGER.info("Turning off LEDs...");
         callback.stopLeds();
-        try {
-            // start display
-            runtime.exec("xset -display :0.0 dpms force on");
-            // refresh page
-            runtime.exec("xdotool key F5 --window $(xdotool getactivewindow)");
-        } catch (IOException e) {
-            LOGGER.error("Could not execute shell commands", e);
-        }
+        LOGGER.info("Starting Display...");
+        bashExecutor.startDisplay();
+        LOGGER.info("Refreshing Page...");
+        bashExecutor.refreshPage();
     }
 
-    private void turnOffDisplay(Runtime runtime) {
-        try {
-            // stop display
-            runtime.exec("sleep 1 && xset -display :0.0 dpms force off");
-        } catch (IOException e) {
-            LOGGER.error("Could not turn off display", e);
-        }
+    private void turnOffDisplay() {
+        LOGGER.info("Turning off Display...");
+        bashExecutor.stopDisplay();
     }
 }
