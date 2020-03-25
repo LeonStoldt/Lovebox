@@ -24,7 +24,7 @@ public class ReedService {
         return event -> {
             Runtime runtime = Runtime.getRuntime();
             boolean isBoxOpen = event.getState().isLow();
-
+            LOGGER.info("State on Pin {} changed to {}", event.getPin(), event.getState().getName());
             if (isBoxOpen) {
                 stopBlinkingAndShowDisplay(callback, runtime);
             } else {
@@ -38,9 +38,9 @@ public class ReedService {
         callback.stopLeds();
         try {
             // start display
-            runtime.exec("xset -display :0.0 dpms force on ");
+            runtime.exec("xset -display :0.0 dpms force on");
             // refresh page
-            runtime.exec("midori -e Reload"); //does not work yet, different command needed
+            runtime.exec("xdotool key F5 --window $(xdotool getactivewindow)");
         } catch (IOException e) {
             LOGGER.error("Could not execute shell commands", e);
         }
@@ -49,7 +49,7 @@ public class ReedService {
     private void turnOffDisplay(Runtime runtime) {
         try {
             // stop display
-            runtime.exec("sleep 1 && xset -display :0.0 dpms force off ");
+            runtime.exec("sleep 1 && xset -display :0.0 dpms force off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
