@@ -39,7 +39,5 @@ xset s noblank
 
 echo "Copying xinit File to \$HOME Folder"
 /bin/cp "$LOVEBOX_DIR"/src/main/resources/.xinitrc "$HOME"/.xinitrc
-echo "Removing mouse cursor."
-unclutter &
 echo "Starting GUI with Browser"
 startx

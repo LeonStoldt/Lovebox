@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "Removing mouse cursor."
+unclutter &
 echo "Starting Window Manager."
 matchbox-window-manager -use_cursor no -use_titlebar no &
 while :; do
