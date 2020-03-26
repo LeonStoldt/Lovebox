@@ -1,6 +1,7 @@
 package de.stoldt.lovebox.gpio.reed;
 
 import com.pi4j.io.gpio.GpioController;
+import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
@@ -12,12 +13,18 @@ import org.slf4j.LoggerFactory;
 public class ReedService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReedService.class);
+
     private final BashExecutor bashExecutor;
+    private final GpioPinDigitalInput reedContact;
 
     public ReedService(BashExecutor bashExecutor, GpioController gpio, GpioCallback callback) {
         this.bashExecutor = bashExecutor;
-        gpio.provisionDigitalInputPin(RaspiPin.GPIO_02, "Reed Contact")
-                .addListener(getStateChangeListener(callback));
+        reedContact = gpio.provisionDigitalInputPin(RaspiPin.GPIO_02, "Reed Contact");
+        reedContact.addListener(getStateChangeListener(callback));
+    }
+
+    public Boolean isClosed() {
+        return reedContact.isHigh();
     }
 
     private GpioPinListenerDigital getStateChangeListener(GpioCallback callback) {
@@ -38,7 +45,6 @@ public class ReedService {
     }
 
     private void stopBlinkingAndShowDisplay(GpioCallback callback) {
-        LOGGER.info("Turning off LEDs...");
         callback.stopLeds();
         LOGGER.info("Starting Display...");
         bashExecutor.startDisplay();

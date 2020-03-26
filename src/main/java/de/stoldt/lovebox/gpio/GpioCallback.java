@@ -7,4 +7,6 @@ public interface GpioCallback {
     void startLeds();
 
     void stopLeds();
+
+    boolean isBoxClosed();
 }
