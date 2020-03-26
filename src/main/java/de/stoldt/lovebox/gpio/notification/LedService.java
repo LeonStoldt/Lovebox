@@ -12,6 +12,8 @@ public class LedService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LedService.class);
     private static final Pin GPIO_PIN = RaspiPin.GPIO_01;
+    private static final int PWM_ON = 50;
+    private static final int PWM_OFF = 0;
 
     private final GpioPinPwmOutput leds;
 
@@ -21,17 +23,17 @@ public class LedService {
     }
 
     public void startBlinking() {
-        LOGGER.info("Set LED State on Pin {} to HIGH", GPIO_PIN.getName());
-        leds.setPwm(500);
+        LOGGER.info("Set LED State on PWM Pin {} to {}", GPIO_PIN.getName(), PWM_ON);
+        leds.setPwm(PWM_ON);
     }
 
     public void stopBlinking() {
-        LOGGER.info("Set LED State on Pin {} to LOW", GPIO_PIN.getName());
-        leds.setPwm(0);
+        LOGGER.info("Set LED State on PWM Pin {} to {}", GPIO_PIN.getName(), PWM_OFF);
+        leds.setPwm(PWM_OFF);
     }
 
     public boolean isActive() {
-        return leds.getPwm() > 0;
+        return leds.getPwm() > PWM_OFF;
     }
 
     public GpioPinPwmOutput getLeds() {
