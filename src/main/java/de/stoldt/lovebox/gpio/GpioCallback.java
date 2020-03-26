@@ -9,4 +9,8 @@ public interface GpioCallback {
     void stopLeds();
 
     boolean isBoxClosed();
+
+    boolean hasUnreadMessages();
+
+    void setHasUnreadMessages(boolean hasUnreadMessages);
 }

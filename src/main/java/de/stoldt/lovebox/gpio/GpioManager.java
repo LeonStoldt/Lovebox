@@ -11,11 +11,13 @@ public class GpioManager implements GpioCallback {
 
     private final LedService leds;
     private final ReedService reed;
+    private boolean hasUnreadMessages;
 
     public GpioManager(BashExecutor bashExecutor) {
         GpioController controller = GpioFactory.getInstance();
         this.leds = new LedService(controller);
         this.reed = new ReedService(bashExecutor, controller, this);
+        this.hasUnreadMessages = false;
     }
 
     @Override
@@ -36,5 +38,14 @@ public class GpioManager implements GpioCallback {
     @Override
     public boolean isBoxClosed() {
         return reed.isClosed();
+    }
+
+    @Override
+    public boolean hasUnreadMessages() {
+        return hasUnreadMessages;
+    }
+
+    public void setHasUnreadMessages(boolean hasUnreadMessages) {
+        this.hasUnreadMessages = hasUnreadMessages;
     }
 }

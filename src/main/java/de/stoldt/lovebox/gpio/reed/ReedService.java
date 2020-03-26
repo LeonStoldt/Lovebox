@@ -19,11 +19,11 @@ public class ReedService {
 
     public ReedService(BashExecutor bashExecutor, GpioController gpio, GpioCallback callback) {
         this.bashExecutor = bashExecutor;
-        reedContact = gpio.provisionDigitalInputPin(RaspiPin.GPIO_02, "Reed Contact");
+        this.reedContact = gpio.provisionDigitalInputPin(RaspiPin.GPIO_02, "Reed Contact");
         reedContact.addListener(getStateChangeListener(callback));
     }
 
-    public Boolean isClosed() {
+    public boolean isClosed() {
         return reedContact.isHigh();
     }
 
@@ -33,27 +33,22 @@ public class ReedService {
             LOGGER.info("State on Pin {} changed to {} - Box is {}",
                     event.getPin(),
                     event.getState().getName(),
-                    event.getState() == PinState.HIGH
-                            ? "CLOSED"
-                            : "OPENED");
+                    event.getState() == PinState.HIGH ? "CLOSED" : "OPENED");
+
             if (isBoxOpen) {
-                stopBlinkingAndShowDisplay(callback);
+                callback.stopLeds();
+                LOGGER.info("Starting Display...");
+                bashExecutor.startDisplay();
+                LOGGER.info("Refreshing Page...");
+                bashExecutor.refreshPage();
             } else {
-                turnOffDisplay();
+                LOGGER.info("Starting Leds in view of unread messages...");
+                if (callback.hasUnreadMessages()) {
+                    callback.startLeds();
+                }
+                LOGGER.info("Turning off Display...");
+                bashExecutor.stopDisplay();
             }
         };
-    }
-
-    private void stopBlinkingAndShowDisplay(GpioCallback callback) {
-        callback.stopLeds();
-        LOGGER.info("Starting Display...");
-        bashExecutor.startDisplay();
-        LOGGER.info("Refreshing Page...");
-        bashExecutor.refreshPage();
-    }
-
-    private void turnOffDisplay() {
-        LOGGER.info("Turning off Display...");
-        bashExecutor.stopDisplay();
     }
 }
