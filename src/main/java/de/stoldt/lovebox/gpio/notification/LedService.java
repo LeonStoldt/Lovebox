@@ -1,7 +1,7 @@
 package de.stoldt.lovebox.gpio.notification;
 
 import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.GpioPinPwmOutput;
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
@@ -13,28 +13,28 @@ public class LedService {
     private static final Logger LOGGER = LoggerFactory.getLogger(LedService.class);
     private static final Pin GPIO_PIN = RaspiPin.GPIO_01;
 
-    private final GpioPinDigitalOutput leds;
+    private final GpioPinPwmOutput leds;
 
     public LedService(GpioController gpio) {
-        this.leds = gpio.provisionDigitalOutputPin(GPIO_PIN, "Notification LEDs", PinState.LOW);
+        this.leds = gpio.provisionPwmOutputPin(GPIO_PIN, "Notification LEDs", 0);
         leds.setShutdownOptions(true, PinState.LOW);
     }
 
     public void startBlinking() {
         LOGGER.info("Set LED State on Pin {} to HIGH", GPIO_PIN.getName());
-        leds.high();
+        leds.setPwm(500);
     }
 
     public void stopBlinking() {
         LOGGER.info("Set LED State on Pin {} to LOW", GPIO_PIN.getName());
-        leds.low();
+        leds.setPwm(0);
     }
 
     public boolean isActive() {
-        return leds.isHigh();
+        return leds.getPwm() > 0;
     }
 
-    public GpioPinDigitalOutput getLeds() {
+    public GpioPinPwmOutput getLeds() {
         return leds;
     }
 }
