@@ -1,7 +1,7 @@
 package de.stoldt.lovebox.gpio.notification;
 
 import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioPinPwmOutput;
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
@@ -12,31 +12,30 @@ public class LedService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LedService.class);
     private static final Pin GPIO_PIN = RaspiPin.GPIO_01;
-    private static final int PWM_ON = 50;
-    private static final int PWM_OFF = 0;
 
-    private final GpioPinPwmOutput leds;
+    private final GpioPinDigitalOutput leds;
 
     public LedService(GpioController gpio) {
-        this.leds = gpio.provisionPwmOutputPin(GPIO_PIN, "Notification LEDs", 0);
+        this.leds = gpio.provisionDigitalOutputPin(GPIO_PIN, "Notification LEDs", PinState.LOW);
         leds.setShutdownOptions(true, PinState.LOW);
+
     }
 
     public void startBlinking() {
-        LOGGER.info("Set LED State on PWM Pin {} to {}", GPIO_PIN.getName(), PWM_ON);
-        leds.setPwm(PWM_ON);
+        LOGGER.info("Set LED State on Pin {} to PULSE", GPIO_PIN.getName());
+        leds.pulse(300L);
     }
 
     public void stopBlinking() {
-        LOGGER.info("Set LED State on PWM Pin {} to {}", GPIO_PIN.getName(), PWM_OFF);
-        leds.setPwm(PWM_OFF);
+        LOGGER.info("Set LED State on Pin {} to LOW", GPIO_PIN.getName());
+        leds.low();
     }
 
     public boolean isActive() {
-        return leds.getPwm() > PWM_OFF;
+        return leds.isHigh();
     }
 
-    public GpioPinPwmOutput getLeds() {
+    public GpioPinDigitalOutput getLeds() {
         return leds;
     }
 }
