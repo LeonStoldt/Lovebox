@@ -23,7 +23,7 @@ public class LedService {
 
     public void startBlinking() {
         LOGGER.info("Set LED State on Pin {} to PULSE", GPIO_PIN.getName());
-        leds.pulse(300L);
+        leds.blink(1000L, 3000L);
     }
 
     public void stopBlinking() {
