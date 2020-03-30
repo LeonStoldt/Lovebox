@@ -15,7 +15,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand("xset", "-display", ":0.0", "dpms", "force", "on");
+            executeCommand("xset", "-display :0.0", "dpms force on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
         }
@@ -23,7 +23,7 @@ public class BashExecutor {
 
     public void stopDisplay() {
         try {
-            executeCommand("sleep", "1", "&&", "xset", "-display", ":0.0", "dpms", "force", "off");
+            executeCommand("sleep", "1", "&&", "xset", "-display :0.0", "dpms force off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
@@ -31,7 +31,7 @@ public class BashExecutor {
 
     public void refreshPage() {
         try {
-            executeCommand("xdotool", "key", "F5", "--window", "$(xdotool getactivewindow)");
+            executeCommand("xdotool", "key F5", "--window $(xdotool getactivewindow)");
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
         }
@@ -39,8 +39,8 @@ public class BashExecutor {
 
     public void upgradePackages() {
         try {
-            executeCommand("sudo", "apt-get", "update");
-            executeCommand("sudo", "apt-get", "upgrade", "-y");
+            executeCommand("sudo", "apt-get update");
+            executeCommand("sudo", "apt-get upgrade -y");
         } catch (IOException e) {
             LOGGER.warn("Could not upgrade packages:", e);
         }
@@ -56,7 +56,7 @@ public class BashExecutor {
 
     public void shutdownSystem() {
         try {
-            executeCommand("sudo", "shutdown", "now");
+            executeCommand("sudo", "shutdown now");
         } catch (IOException e) {
             LOGGER.warn("Could not shutdown system:", e);
         }
