@@ -21,6 +21,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
+            executeCommand("export DISPLAY=\":0\"");
             executeCommand("xset -display :0.0 dpms force on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
@@ -29,6 +30,7 @@ public class BashExecutor {
 
     public void stopDisplay() {
         try {
+            executeCommand("export DISPLAY=\":0\"");
             executeCommand("sleep 1 && xset -display :0.0 dpms force off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
@@ -37,6 +39,7 @@ public class BashExecutor {
 
     public void refreshPage() {
         try {
+            executeCommand("export DISPLAY=\":0\" && export XAUTHORITY=/root/.Xauthority");
             executeCommand("xdotool key F5 --window $(xdotool getactivewindow)");
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
