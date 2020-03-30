@@ -71,12 +71,18 @@ public class BashExecutor {
     private void executeCommand(String command) throws IOException {
         LOGGER.info("Executing command: {}", command);
         Process process = runtime.exec(command);
-        BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
+        LOGGER.info("Std Input Log:");
         String line;
-        while ((line = input.readLine()) != null) {
+        while ((line = stdInput.readLine()) != null) {
             LOGGER.info(line);
         }
+        while ((line = stdError.readLine()) != null) {
+            LOGGER.info(line);
+        }
+        LOGGER.info("Std Input Log:");
 
         try {
             int exitCode = process.waitFor();
