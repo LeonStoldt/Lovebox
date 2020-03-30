@@ -28,7 +28,7 @@ else
   mvn clean compile
 fi
 echo "Starting Lovebox Application. Log of application: /LOVEBOX_DIR/logs/application.log"
-mvn spring-boot:run &>logs/application.log &
+sudo mvn spring-boot:run |& tee logs/application.log &
 
 echo "Disable DPMS (Energy Star) features."
 xset -dpms
