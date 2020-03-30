@@ -82,7 +82,7 @@ public class BashExecutor {
         while ((line = stdError.readLine()) != null) {
             LOGGER.info(line);
         }
-        LOGGER.info("Std Input Log:");
+        LOGGER.info("Std Error Log:");
 
         try {
             int exitCode = process.waitFor();
