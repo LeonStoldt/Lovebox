@@ -2,13 +2,9 @@ package de.stoldt.lovebox.gpio;
 
 public interface GpioCallback {
 
-    boolean ledsAreActive();
+    void updateBoxState();
 
-    void startLeds();
-
-    void stopLeds();
-
-    boolean isBoxClosed();
+    void notifyLeds();
 
     boolean hasUnreadMessages();
 

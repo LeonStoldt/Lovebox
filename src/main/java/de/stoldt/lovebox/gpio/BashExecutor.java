@@ -2,8 +2,6 @@ package de.stoldt.lovebox.gpio;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.event.ContextStartedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -19,12 +17,6 @@ public class BashExecutor {
 
     public BashExecutor() {
         this.runtime = Runtime.getRuntime();
-    }
-
-    @EventListener
-    public void onApplicationStartup(ContextStartedEvent contextStartedEvent) {
-        LOGGER.info("Caught ContextStartedEvent causes refreshing Page");
-        refreshPage();
     }
 
     public void startDisplay() {
