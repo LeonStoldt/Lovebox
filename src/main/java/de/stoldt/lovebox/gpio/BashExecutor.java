@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class BashExecutor {
@@ -15,7 +17,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand("xset", "-display :0.0 dpms force on");
+            executeCommand("xset -display :0.0", "dpms force on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
         }
@@ -24,7 +26,7 @@ public class BashExecutor {
     public void stopDisplay() {
         try {
             executeCommand("sleep", "1");
-            executeCommand("xset", "-display :0.0 dpms force off");
+            executeCommand("xset -display :0.0", "dpms force off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
@@ -32,7 +34,8 @@ public class BashExecutor {
 
     public void refreshPage() {
         try {
-            executeCommand("xdotool", "key F5 --window $(xdotool getactivewindow)");
+            String windowId = executeCommand("xdotool", "getactivewindow").get(0);
+            executeCommand("xdotool", "key", "F5", "--window", windowId);
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
         }
@@ -71,7 +74,8 @@ public class BashExecutor {
         }
     }
 
-    private void executeCommand(String... commandAndArguments) throws IOException {
+    private List<String> executeCommand(String... commandAndArguments) throws IOException {
+        List<String> result = new ArrayList<>();
         String command = String.join(" ", commandAndArguments);
         LOGGER.info("Executing command: {}", command);
 
@@ -85,6 +89,7 @@ public class BashExecutor {
         LOGGER.info("Std Input Log:");
         String line;
         while ((line = stdInput.readLine()) != null) {
+            result.add(line);
             LOGGER.info(line);
         }
         while ((line = stdError.readLine()) != null) {
@@ -99,5 +104,6 @@ public class BashExecutor {
             Thread.currentThread().interrupt();
             LOGGER.warn("Waiting for exit code of command {} threw:", command, e);
         }
+        return result;
     }
 }
