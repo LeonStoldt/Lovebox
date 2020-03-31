@@ -38,13 +38,13 @@ public class GpioManager implements GpioCallback {
             LOGGER.info("Turning off Display...");
             bashExecutor.stopDisplay();
         } else {
-            leds.stopBlinking();
-            LOGGER.info("Starting Display...");
-            bashExecutor.startDisplay();
             if (refreshPage) {
                 LOGGER.info("Refreshing Page...");
                 bashExecutor.refreshPage();
             }
+            leds.stopBlinking();
+            LOGGER.info("Starting Display...");
+            bashExecutor.startDisplay();
         }
     }
 
