@@ -17,7 +17,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand("xset", "dpms force on");
+            executeCommand(true, "xset", "dpms force on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
         }
@@ -25,8 +25,8 @@ public class BashExecutor {
 
     public void stopDisplay() {
         try {
-            executeCommand("sleep", "1");
-            executeCommand("xset", "dpms force off");
+            executeCommand(true, "sleep", "1");
+            executeCommand(true, "xset", "dpms force off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
@@ -34,8 +34,8 @@ public class BashExecutor {
 
     public void refreshPage() {
         try {
-            String windowId = executeCommand("xdotool", "getactivewindow").get(0);
-            executeCommand("xdotool", "key", "F5", "--window", windowId);
+            String windowId = executeCommand(true, "xdotool", "getactivewindow").get(0);
+            executeCommand(true, "xdotool", "key", "F5", "--window", windowId);
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
         }
@@ -43,7 +43,7 @@ public class BashExecutor {
 
     public void startBrowser() {
         try {
-            executeCommand("startx");
+            executeCommand(false, "startx");
         } catch (IOException e) {
             LOGGER.warn("Could not start browser by calling .xinitrc file:", e);
         }
@@ -51,8 +51,8 @@ public class BashExecutor {
 
     public void upgradePackages() {
         try {
-            executeCommand("sudo", "apt-get update");
-            executeCommand("sudo", "apt-get upgrade -y");
+            executeCommand(false, "sudo", "apt-get update");
+            executeCommand(false, "sudo", "apt-get upgrade -y");
         } catch (IOException e) {
             LOGGER.warn("Could not upgrade packages:", e);
         }
@@ -60,7 +60,7 @@ public class BashExecutor {
 
     public void rebootSystem() {
         try {
-            executeCommand("sudo", "reboot");
+            executeCommand(false, "sudo", "reboot");
         } catch (IOException e) {
             LOGGER.warn("Could not reboot system:", e);
         }
@@ -68,13 +68,13 @@ public class BashExecutor {
 
     public void shutdownSystem() {
         try {
-            executeCommand("sudo", "shutdown now");
+            executeCommand(false, "sudo", "shutdown now");
         } catch (IOException e) {
             LOGGER.warn("Could not shutdown system:", e);
         }
     }
 
-    private List<String> executeCommand(String... commandAndArguments) throws IOException {
+    private List<String> executeCommand(boolean waitForConsoleOutput, String... commandAndArguments) throws IOException {
         List<String> result = new ArrayList<>();
         String command = String.join(" ", commandAndArguments);
         LOGGER.info("Executing command: {}", command);
@@ -86,15 +86,17 @@ public class BashExecutor {
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
         BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
-        String line;
-        LOGGER.info("Std Input Log:");
-        while ((line = stdInput.readLine()) != null) {
-            result.add(line);
-            LOGGER.info(line);
-        }
-        LOGGER.info("Std Error Log:");
-        while ((line = stdError.readLine()) != null) {
-            LOGGER.info(line);
+        if (waitForConsoleOutput) {
+            String line;
+            LOGGER.info("Std Input Log:");
+            while ((line = stdInput.readLine()) != null) {
+                result.add(line);
+                LOGGER.info(line);
+            }
+            LOGGER.info("Std Error Log:");
+            while ((line = stdError.readLine()) != null) {
+                LOGGER.info(line);
+            }
         }
         return result;
     }
