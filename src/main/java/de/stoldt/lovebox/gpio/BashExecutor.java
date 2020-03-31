@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class BashExecutor {
@@ -17,7 +15,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand(true, "xset", "dpms", "force on");
+            executeCommand(true, "xset", "+dpms");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
         }
@@ -25,8 +23,8 @@ public class BashExecutor {
 
     public void stopDisplay() {
         try {
-            executeCommand(true, "sleep", "1");
-            executeCommand(true, "xset", "dpms", "force off");
+            executeCommand(false, "sleep", "1");
+            executeCommand(true, "xset", "-dpms");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
@@ -34,8 +32,7 @@ public class BashExecutor {
 
     public void refreshPage() {
         try {
-            String windowId = executeCommand(true, "xdotool", "getactivewindow").get(0);
-            executeCommand(true, "xdotool", "key", "F5", "--window ".concat(windowId));
+            executeCommand(true, "xdotool", "key", "F5");
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
         }
@@ -74,8 +71,7 @@ public class BashExecutor {
         }
     }
 
-    private List<String> executeCommand(boolean waitForConsoleOutput, String... commandAndArguments) throws IOException {
-        List<String> result = new ArrayList<>();
+    private void executeCommand(boolean waitForConsoleOutput, String... commandAndArguments) throws IOException {
         String command = String.join(" ", commandAndArguments);
         LOGGER.info("Executing command: {}", command);
 
@@ -90,7 +86,6 @@ public class BashExecutor {
             String line;
             LOGGER.info("Std Input Log:");
             while ((line = stdInput.readLine()) != null) {
-                result.add(line);
                 LOGGER.info(line);
             }
             LOGGER.info("Std Error Log:");
@@ -98,6 +93,5 @@ public class BashExecutor {
                 LOGGER.info(line);
             }
         }
-        return result;
     }
 }
