@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Checking required packages."
-packages=(git maven midori xinit x11-xserver-utils xdotool matchbox unclutter ca-certificates-java java-common at-spi2-core)
+packages=(git maven midori xinit x11-xserver-utils xdotool matchbox unclutter ca-certificates-java java-common wiringpi at-spi2-core)
 for package in "${packages[@]}"; do
   if [ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -c "ok installed")" -eq 0 ]; then
     echo "Installing required package: $package"
