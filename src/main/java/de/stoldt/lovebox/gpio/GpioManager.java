@@ -31,8 +31,8 @@ public class GpioManager implements GpioCallback {
     @Override
     public void updateBoxState(boolean refreshPage) {
         if (reed.isClosed()) {
-            LOGGER.info("Starting Leds in view of unread messages...");
             if (hasUnreadMessages()) {
+                LOGGER.info("Starting Leds in view of unread messages...");
                 notifyLeds();
             }
             LOGGER.info("Turning off Display...");

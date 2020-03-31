@@ -15,7 +15,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand(true, "xset", "+dpms");
+            executeCommand(true, "xset", "dpms", "force", "on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
         }
@@ -24,7 +24,7 @@ public class BashExecutor {
     public void stopDisplay() {
         try {
             executeCommand(false, "sleep", "1");
-            executeCommand(true, "xset", "-dpms");
+            executeCommand(true, "xset", "dpms", "force", "off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
@@ -32,7 +32,7 @@ public class BashExecutor {
 
     public void refreshPage() {
         try {
-            executeCommand(true, "xdotool", "key", "F5");
+            executeCommand(false, "xdotool", "key", "F5");
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
         }
@@ -76,7 +76,7 @@ public class BashExecutor {
         LOGGER.info("Executing command: {}", command);
 
         ProcessBuilder processBuilder = new ProcessBuilder(commandAndArguments);
-        processBuilder.environment().putIfAbsent("DISPLAY", ":0.0");
+        processBuilder.environment().putIfAbsent("DISPLAY", ":0");
         processBuilder.environment().putIfAbsent("XAUTHORITY", "/root/.Xauthority");
         Process process = processBuilder.start();
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
