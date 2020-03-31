@@ -17,7 +17,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand("xset -display :0.0", "dpms force on");
+            executeCommand("xset", "dpms force on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
         }
@@ -26,7 +26,7 @@ public class BashExecutor {
     public void stopDisplay() {
         try {
             executeCommand("sleep", "1");
-            executeCommand("xset -display :0.0", "dpms force off");
+            executeCommand("xset", "dpms force off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
@@ -43,7 +43,7 @@ public class BashExecutor {
 
     public void startBrowser() {
         try {
-            executeCommand("startx &");
+            executeCommand("startx");
         } catch (IOException e) {
             LOGGER.warn("Could not start browser by calling .xinitrc file:", e);
         }
@@ -86,23 +86,15 @@ public class BashExecutor {
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
         BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
-        LOGGER.info("Std Input Log:");
         String line;
+        LOGGER.info("Std Input Log:");
         while ((line = stdInput.readLine()) != null) {
             result.add(line);
             LOGGER.info(line);
         }
+        LOGGER.info("Std Error Log:");
         while ((line = stdError.readLine()) != null) {
             LOGGER.info(line);
-        }
-        LOGGER.info("Std Error Log:");
-
-        try {
-            int exitCode = process.waitFor();
-            LOGGER.info("Finished command {} with exit code {}", command, exitCode);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOGGER.warn("Waiting for exit code of command {} threw:", command, e);
         }
         return result;
     }
