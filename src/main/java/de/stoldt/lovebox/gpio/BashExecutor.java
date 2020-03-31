@@ -43,7 +43,7 @@ public class BashExecutor {
 
     public void startBrowser() {
         try {
-            executeCommand("startx");
+            executeCommand("startx &");
         } catch (IOException e) {
             LOGGER.warn("Could not start browser by calling .xinitrc file:", e);
         }
