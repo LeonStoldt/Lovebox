@@ -4,9 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 @Component
 public class BashExecutor {
@@ -15,7 +13,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand(true, "xset", "dpms", "force", "on");
+            executeCommand("xset", "dpms", "force", "on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
         }
@@ -23,8 +21,8 @@ public class BashExecutor {
 
     public void stopDisplay() {
         try {
-            executeCommand(false, "sleep", "1");
-            executeCommand(true, "xset", "dpms", "force", "off");
+            executeCommand("sleep", "1");
+            executeCommand("xset", "dpms", "force", "off");
         } catch (IOException e) {
             LOGGER.error("Could not turn off display", e);
         }
@@ -32,7 +30,7 @@ public class BashExecutor {
 
     public void refreshPage() {
         try {
-            executeCommand(false, "xdotool", "key", "F5");
+            executeCommand("xdotool", "key", "F5");
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
         }
@@ -40,7 +38,7 @@ public class BashExecutor {
 
     public void startBrowser() {
         try {
-            executeCommand(false, "startx");
+            executeCommand("startx");
         } catch (IOException e) {
             LOGGER.warn("Could not start browser by calling .xinitrc file:", e);
         }
@@ -48,8 +46,8 @@ public class BashExecutor {
 
     public void upgradePackages() {
         try {
-            executeCommand(false, "sudo", "apt-get update");
-            executeCommand(false, "sudo", "apt-get upgrade -y");
+            executeCommand("sudo", "apt-get update");
+            executeCommand("sudo", "apt-get upgrade -y");
         } catch (IOException e) {
             LOGGER.warn("Could not upgrade packages:", e);
         }
@@ -57,7 +55,7 @@ public class BashExecutor {
 
     public void rebootSystem() {
         try {
-            executeCommand(false, "sudo", "reboot");
+            executeCommand("sudo", "reboot");
         } catch (IOException e) {
             LOGGER.warn("Could not reboot system:", e);
         }
@@ -65,33 +63,19 @@ public class BashExecutor {
 
     public void shutdownSystem() {
         try {
-            executeCommand(false, "sudo", "shutdown now");
+            executeCommand("sudo", "shutdown now");
         } catch (IOException e) {
             LOGGER.warn("Could not shutdown system:", e);
         }
     }
 
-    private void executeCommand(boolean waitForConsoleOutput, String... commandAndArguments) throws IOException {
+    private void executeCommand(String... commandAndArguments) throws IOException {
         String command = String.join(" ", commandAndArguments);
         LOGGER.info("Executing command: {}", command);
 
         ProcessBuilder processBuilder = new ProcessBuilder(commandAndArguments);
         processBuilder.environment().putIfAbsent("DISPLAY", ":0");
         processBuilder.environment().putIfAbsent("XAUTHORITY", "/root/.Xauthority");
-        Process process = processBuilder.start();
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-
-        if (waitForConsoleOutput) {
-            String line;
-            LOGGER.info("Std Input Log:");
-            while ((line = stdInput.readLine()) != null) {
-                LOGGER.info(line);
-            }
-            LOGGER.info("Std Error Log:");
-            while ((line = stdError.readLine()) != null) {
-                LOGGER.info(line);
-            }
-        }
+        processBuilder.start();
     }
 }
