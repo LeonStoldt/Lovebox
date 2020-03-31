@@ -38,6 +38,14 @@ public class BashExecutor {
         }
     }
 
+    public void startBrowser() {
+        try {
+            executeCommand("startx");
+        } catch (IOException e) {
+            LOGGER.warn("Could not start browser by calling .xinitrc file:", e);
+        }
+    }
+
     public void upgradePackages() {
         try {
             executeCommand("sudo", "apt-get update");

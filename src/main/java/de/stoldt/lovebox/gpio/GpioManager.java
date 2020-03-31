@@ -29,7 +29,7 @@ public class GpioManager implements GpioCallback {
     }
 
     @Override
-    public void updateBoxState() {
+    public void updateBoxState(boolean refreshPage) {
         if (reed.isClosed()) {
             LOGGER.info("Starting Leds in view of unread messages...");
             if (hasUnreadMessages()) {
@@ -41,8 +41,10 @@ public class GpioManager implements GpioCallback {
             leds.stopBlinking();
             LOGGER.info("Starting Display...");
             bashExecutor.startDisplay();
-            LOGGER.info("Refreshing Page...");
-            bashExecutor.refreshPage();
+            if (refreshPage) {
+                LOGGER.info("Refreshing Page...");
+                bashExecutor.refreshPage();
+            }
         }
     }
 

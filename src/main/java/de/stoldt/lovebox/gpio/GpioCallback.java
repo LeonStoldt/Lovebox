@@ -2,7 +2,7 @@ package de.stoldt.lovebox.gpio;
 
 public interface GpioCallback {
 
-    void updateBoxState();
+    void updateBoxState(boolean refreshPage);
 
     void notifyLeds();
 
