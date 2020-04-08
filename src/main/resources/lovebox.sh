@@ -1,20 +1,22 @@
 #!/bin/bash
 echo "Checking required packages."
-packages=(git maven midori xinit x11-xserver-utils xdotool matchbox unclutter ca-certificates-java java-common wiringpi at-spi2-core)
+packages=(git openjdk-8-jre-headless openjdk-8-jre ca-certificates-java at-spi2-core maven midori xinit x11-xserver-utils xdotool matchbox unclutter wiringpi)
 for package in "${packages[@]}"; do
   if [ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -c "ok installed")" -eq 0 ]; then
     echo "Installing required package: $package"
-    apt-get install "$package"
+    apt-get install "$package" -y
   fi
   echo "Package $package is installed."
 done
 
-cd "$HOME" || exit
-LOVEBOX_DIR=$HOME/Lovebox
+WORKING_DIR=/home/pi
+
+cd $WORKING_DIR || exit
+LOVEBOX_DIR=$WORKING_DIR/Lovebox
 
 if [ ! -d "$LOVEBOX_DIR" ]; then
   echo "Directory $LOVEBOX_DIR DOES NOT exist."
-  cd Desktop || exit
+  cd $WORKING_DIR || exit
   echo "Cloning the repository..."
   git clone https://github.com/LeonStoldt/Lovebox.git
 fi
@@ -37,5 +39,5 @@ xset s off
 echo "Don't blank the video device."
 xset s noblank
 
-echo "Copying xinit File to \$HOME Folder"
-/bin/cp "$LOVEBOX_DIR"/src/main/resources/.xinitrc "$HOME"/.xinitrc
+echo "Copying xinit File to $WORKING_DIR Folder"
+/bin/cp "$LOVEBOX_DIR"/src/main/resources/.xinitrc $WORKING_DIR/.xinitrc
