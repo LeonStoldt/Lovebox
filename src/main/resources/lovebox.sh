@@ -10,7 +10,7 @@ for package in "${packages[@]}"; do
 done
 
 cd "$HOME" || exit
-LOVEBOX_DIR=$HOME/Desktop/Lovebox
+LOVEBOX_DIR=$HOME/Lovebox
 
 if [ ! -d "$LOVEBOX_DIR" ]; then
   echo "Directory $LOVEBOX_DIR DOES NOT exist."
