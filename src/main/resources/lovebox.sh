@@ -9,7 +9,7 @@ for package in "${packages[@]}"; do
   echo "Package $package is installed."
 done
 
-WORKING_DIR=/home/pi
+WORKING_DIR=/root
 
 cd $WORKING_DIR || exit
 LOVEBOX_DIR=$WORKING_DIR/Lovebox

@@ -14,7 +14,7 @@ AUTO_SETUP_NET_STATIC_IP=<AVAILABLE IP ADDRESS IN YOUR NETWORK>
 [...]
 AUTO_SETUP_NET_STATIC_GATEWAY=<IP ADDRESS OF YOUR ROUTER>
 ```
--   you might change the locale settings and replace "de" by your country code for keyboard layout, wifi code etc. and change the time zone
+-   you might change the keyboard layout settings by replacing "de" with your country code and change the wifi code and time zone
 -   plug the sd card to your pi and start it
 -   on a console, you can run `ping -l <YOUR CHOSEN IP ADDRESS OF THE PI>` to check when the pi is available
 -   start putty to connect to your pi via ssh with your chosen IP address of the pi and default port 22
