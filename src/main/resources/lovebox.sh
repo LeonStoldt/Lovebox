@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Checking required packages."
-packages=(git openjdk-8-jre-headless openjdk-8-jre ca-certificates-java at-spi2-core maven midori xinit x11-xserver-utils xdotool matchbox unclutter wiringpi)
+packages=(git ca-certificates-java at-spi2-core maven midori xinit x11-xserver-utils xdotool matchbox unclutter wiringpi)
 for package in "${packages[@]}"; do
   if [ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -c "ok installed")" -eq 0 ]; then
     echo "Installing required package: $package"

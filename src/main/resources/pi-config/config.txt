@@ -1,68 +1,98 @@
-# For more options and information see
-# http://rpf.io/configtxt
-# Some settings may impact device functionality. See link above for details
+# IMPORTANT:
+# - Modifications to /boot/config.txt will not be preserved on reboot.
+# - Please ensure you edit from the DietPi-RAMdisk location: /DietPi/config.txt
 
-# uncomment if you get no picture on HDMI for a default "safe" mode
+#-------Display---------
+# If you get no picture, set the following to "1" to apply most compatible HDMI settings.
 #hdmi_safe=1
 
-# uncomment this if your display has a black border of unused pixels visible
-# and your display can output without overscan
-#disable_overscan=1
+# Uncomment to adjust the HDMI signal strength if you have interferences, blanking, or no display.
+# - Values from "0" to "11" are allowed, use values above "7" only if required, e.g. with very long HDMI cable.
+# - Default on first RPi1 A/B is "2", else "5", on RPi4 this setting is ignored.
+config_hdmi_boost=10
 
-# uncomment the following to adjust overscan. Use positive numbers if console
-# goes off screen, and negative if there is too much border
+# Uncomment if HDMI display is not detected and composite is being outputted.
+hdmi_force_hotplug=1
+
+# Uncomment to disable HDMI even if plugged, e.g. to force composite output.
+#hdmi_ignore_hotplug=1
+
+# Uncomment to force a console size. By default it will be display's size minus overscan.
+#framebuffer_width=1280
+#framebuffer_height=720
+
+# Uncomment to enable SDTV/composite output on RPi4. This has no effect on previous RPi models.
+#enable_tvout=1
+# SDTV mode
+#sdtv_mode=0
+
+# Uncomment to force a specific HDMI mode (this will force VGA).
+hdmi_group=2
+hdmi_mode=87
+
+# Uncomment to force an HDMI mode rather than DVI. This can make audio work in DMT (computer monitor) modes.
+#hdmi_drive=2
+
+# Set "hdmi_blanking=1" to allow the display going into standby after 10 minutes without input.
+# With default value "0", the display shows a blank screen instead, but will not go into standby.
+# NB: With "1" some applications (e.g. Kodi, OMXPlayer) cannot prevent display standby due to missing DPMS signal.
+#hdmi_blanking=1
+
+# Set to "1" if your display has a black border of unused pixels visible.
+disable_overscan=1
+
+# Uncomment the following to adjust overscan. Use positive numbers if console goes off screen, and negative if there is too much border.
 #overscan_left=16
 #overscan_right=16
 #overscan_top=16
 #overscan_bottom=16
 
-# uncomment to force a console size. By default it will be display's size minus
-# overscan.
-#framebuffer_width=1280
-#framebuffer_height=720
+# Rotation
+display_hdmi_rotate=0
+lcd_rotate=0
 
-# uncomment if hdmi display is not detected and composite is being output
-hdmi_force_hotplug=1
-
-# uncomment to force a specific HDMI mode (this will force VGA)
-hdmi_group=2
-hdmi_mode=87
-
-# uncomment to force a HDMI mode rather than DVI. This can make audio work in
-# DMT (computer monitor) modes
-#hdmi_drive=2
-
-# uncomment to increase signal to HDMI, if you have interference, blanking, or
-# no display
-config_hdmi_boost=10
-
-# uncomment for composite PAL
-#sdtv_mode=2
-
-#uncomment to overclock the arm. 700 MHz is the default.
-#arm_freq=800
-
-# Uncomment some or all of these to enable the optional hardware interfaces
-#dtparam=i2c_arm=on
-#dtparam=i2s=on
-#dtparam=spi=on
-
-# Uncomment this to enable infrared communication.
-#dtoverlay=gpio-ir,gpio_pin=17
-#dtoverlay=gpio-ir-tx,gpio_pin=18
-
-max_usb_current=1
 hdmi_cvt 1024 600 60 6 0 0 0
 
-# Additional overlays and parameters are documented /boot/overlays/README
+#-------RPi camera module-------
+#start_x=1
+#disable_camera_led=1
 
-# Enable audio (loads snd_bcm2835)
-dtparam=audio=on
+#-------GPU memory splits-------
+gpu_mem_256=16
+gpu_mem_512=16
+gpu_mem_1024=16
 
-[pi4]
-# Enable DRM VC4 V3D driver on top of the dispmanx display stack
-dtoverlay=vc4-fkms-v3d
-max_framebuffers=2
+#-------Max USB current---------
+max_usb_current=1
 
-[all]
-#dtoverlay=vc4-fkms-v3d
+#-------Boot splash screen------
+disable_splash=1
+
+#-------Onboard sound----------
+dtparam=audio=off
+
+#-------I2C-------------
+dtparam=i2c_arm=off
+dtparam=i2c1=off
+#dtparam=i2c_arm_baudrate=100000
+
+#-------SPI-------------
+dtparam=spi=off
+
+#-------Serial/UART-----
+# NB: Enabled for 1st run only. If you want to keep this setting, please set CONFIG_SERIAL_CONSOLE_ENABLE=1 in dietpi.txt before 1st boot.
+# NB: "enable_uart=1" will forcefully set "core_freq=250" on WiFi/BT-capable RPi models, unless "force_turbo=1" is set as well.
+enable_uart=1
+
+#-------Overclock-------
+temp_limit=65
+initial_turbo=20
+
+#over_voltage=0
+#arm_freq=900
+#core_freq=250
+#sdram_freq=400
+
+#arm_freq_min=300
+#core_freq_min=250
+#sdram_freq_min=400
