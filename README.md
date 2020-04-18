@@ -15,9 +15,11 @@ AUTO_SETUP_NET_STATIC_IP=<AVAILABLE IP ADDRESS IN YOUR NETWORK>
 AUTO_SETUP_NET_STATIC_GATEWAY=<IP ADDRESS OF YOUR ROUTER>
 ```
 -   you might change the keyboard layout settings by replacing "de" with your country code and change the wifi code and time zone
+-   open `dietpi-wifi.txt` and add your SSID and KEY of your wireless network
+-   save the files and eject the sd card of your computer
 -   plug the sd card to your pi and start it
 -   on a console, you can run `ping -l <YOUR CHOSEN IP ADDRESS OF THE PI>` to check when the pi is available
--   start putty to connect to your pi via ssh with your chosen IP address of the pi and default port 22
+-   start powershell to connect to your pi via `ssh -l root <YOUR CHOSEN UP ADDRESS OF THE PI> -p 22`
 -   default username is `pi` and password is `dietpi`
 -   you need to agree the license and you should see the installation process starting
 -   it is recommended to change passwords (you will be asked for it)
@@ -38,10 +40,6 @@ After system reboot:
 -   run `sudo -i` to login as sudo
 -   run `apt-get update && apt-get upgrade`
 -   run `git clone https://github.com/LeonStoldt/Lovebox.git` into your $HOME folder (/root)
--   run `dietpi-config` and select AutoStart Options
--   choose 14: Custom.sh - /var/lib/dietpi/dietpi-autostart/custom.sh
--   exit dietpi-config and cancel reboot
--   run `echo "sleep 3 && sudo bash /root/Lovebox/src/main/resources/lovebox.sh |& tee /root/lovebox.log" > /var/lib/dietpi/dietpi-autostart/custom.sh`
 -   run `apt-get install maven`
 -   run `cd Lovebox`
 -   run `vim /root/Lovebox/src/main/resources/application.properties` (use e.g. nano instead of vim if optional part was skipped)
@@ -49,5 +47,8 @@ After system reboot:
 -   run `mvn clean install`
 -   check if the database files are created with `ls -la /root/Lovebox/db` you should see a db file
 -   run `vim /root/Lovebox/src/main/resources/application.properties` again and change `spring.jpa.hibernate.ddl-auto` back to `validate` 
--   run `reboot`
+-   run `echo "sudo bash /root/Lovebox/src/main/resources/lovebox.sh |& tee /root/lovebox.log" > /var/lib/dietpi/dietpi-autostart/custom.sh`
+-   run `dietpi-config` and select AutoStart Options
+-   choose 14: Custom.sh - /var/lib/dietpi/dietpi-autostart/custom.sh
+-   exit dietpi-config reboot
 
