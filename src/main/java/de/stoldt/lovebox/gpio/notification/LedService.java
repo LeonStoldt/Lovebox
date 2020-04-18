@@ -60,11 +60,13 @@ public class LedService {
 
     public void stopPulsing() {
         LOGGER.info("Stop pulsing Pin {} with PWM", GPIO_PIN.getName());
-        pwmThread.interrupt();
+        if (pwmThread != null) {
+            pwmThread.interrupt();
+        }
         leds.setPwm(RANGE_LED_OFF);
     }
 
     public boolean isActive() {
-        return pwmThread.isAlive();
+        return pwmThread != null && pwmThread.isAlive();
     }
 }
