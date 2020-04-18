@@ -38,11 +38,11 @@ public class GpioManager implements GpioCallback {
             LOGGER.info("Turning off Display...");
             bashExecutor.stopDisplay();
         } else {
+            leds.stopPulsing();
             if (refreshPage) {
                 LOGGER.info("Refreshing Page...");
                 bashExecutor.refreshPage();
             }
-            leds.stopBlinking();
             LOGGER.info("Starting Display...");
             bashExecutor.startDisplay();
         }
@@ -51,7 +51,7 @@ public class GpioManager implements GpioCallback {
     @Override
     public void notifyLeds() {
         if (!leds.isActive() && reed.isClosed()) {
-            leds.startBlinking();
+            leds.startPulsing();
         }
     }
 

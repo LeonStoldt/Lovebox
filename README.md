@@ -47,8 +47,16 @@ After system reboot:
 -   run `mvn clean install`
 -   check if the database files are created with `ls -la /root/Lovebox/db` you should see a db file
 -   run `vim /root/Lovebox/src/main/resources/application.properties` again and change `spring.jpa.hibernate.ddl-auto` back to `validate` 
--   run `echo "sudo bash /root/Lovebox/src/main/resources/lovebox.sh |& tee /root/lovebox.log" > /var/lib/dietpi/dietpi-autostart/custom.sh`
+-   run `echo -e '#!/bin/bash\nsudo bash /root/Lovebox/src/main/resources/lovebox.sh |& tee /root/lovebox.log' > /var/lib/dietpi/dietpi-autostart/custom.sh`
 -   run `dietpi-config` and select AutoStart Options
 -   choose 14: Custom.sh - /var/lib/dietpi/dietpi-autostart/custom.sh
 -   exit dietpi-config reboot
 
+
+## Troubleshooting
+
+-   see more details on ssh login: add `-v` to ssh command
+
+-   run `systemctl status dietpi-autostart_custom` to see system info on startup failures of custom script
+
+-   check if `/var/lib/dietpi/dietpi-autostart/custom.sh` ist executable (otherwise run `chmod +x /var/lib/dietpi/dietpi-autostart/custom.sh`)

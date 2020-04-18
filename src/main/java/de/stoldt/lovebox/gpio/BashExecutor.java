@@ -13,6 +13,7 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
+            executeCommand("sleep", "1");
             executeCommand("xset", "dpms", "force", "on");
         } catch (IOException e) {
             LOGGER.warn("Could not start Display:", e);
