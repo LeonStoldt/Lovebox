@@ -32,13 +32,6 @@ fi
 echo "Starting Lovebox Application. Log of application: /LOVEBOX_DIR/logs/application.log"
 sudo mvn spring-boot:run -Dmaven.test.skip=true |& tee logs/application.log &
 
-echo "Disable DPMS (Energy Star) features."
-xset -dpms
-echo "Disable screen saver."
-xset s off
-echo "Don't blank the video device."
-xset s noblank
-
 echo "Copying xinit File to $WORKING_DIR Folder"
 /bin/cp "$LOVEBOX_DIR"/src/main/resources/.xinitrc $WORKING_DIR/.xinitrc
 

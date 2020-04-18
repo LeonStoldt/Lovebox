@@ -64,6 +64,16 @@ public class BashExecutor {
         }
     }
 
+    public void disableScreenSaver() {
+        try {
+            executeCommand("xset", "-dpms");
+            executeCommand("xset", "s", "off");
+            executeCommand("xset", "s", "noblank");
+        } catch (IOException e) {
+            LOGGER.warn("Could not disable screen saver features:", e);
+        }
+    }
+
     private Process executeCommand(String... commandAndArguments) throws IOException {
         String command = String.join(" ", commandAndArguments);
         LOGGER.info("Executing command: {}", command);
