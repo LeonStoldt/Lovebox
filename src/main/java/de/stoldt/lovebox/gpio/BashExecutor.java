@@ -12,21 +12,19 @@ public class BashExecutor {
     private static final Logger LOGGER = LoggerFactory.getLogger(BashExecutor.class);
 
     public void startDisplay() {
-        try {
-            Process waitingProcess = executeCommand("sleep", "2");
-            waitingProcess.waitFor();
-            executeCommand("xset", "dpms", "force", "on");
-        } catch (IOException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOGGER.warn("Could not start Display:", e);
-        }
+        setDisplay(true);
     }
 
     public void stopDisplay() {
+        setDisplay(false);
+    }
+
+    private void setDisplay(boolean displayOn) {
+        String status = displayOn ? "on" : "off";
         try {
             Process waitingProcess = executeCommand("sleep", "1");
             waitingProcess.waitFor();
-            executeCommand("xset", "dpms", "force", "off");
+            executeCommand("xset", "dpms", "force", status);
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             LOGGER.error("Could not turn off display", e);
@@ -38,14 +36,6 @@ public class BashExecutor {
             executeCommand("xdotool", "key", "F5");
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
-        }
-    }
-
-    public void startBrowser() {
-        try {
-            executeCommand("startx");
-        } catch (IOException e) {
-            LOGGER.warn("Could not start xserver by calling .xinitrc file:", e);
         }
     }
 

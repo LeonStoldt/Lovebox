@@ -17,8 +17,8 @@ public class LedService {
     private static final int RANGE_LED_ON = 100;
     private static final int DELAY = 10;
     private static final int RANGE_LED_OFF = 0;
-    public static final long LED_ON_TIME = 500L;
-    public static final long LED_OFF_TIME = 500L;
+    private static final long LED_ON_TIME = 700L;
+    private static final long LED_OFF_TIME = 400L;
 
     private final GpioPinPwmOutput leds;
     private Thread pwmThread;

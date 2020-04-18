@@ -4,6 +4,7 @@ import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import de.stoldt.lovebox.gpio.notification.LedService;
 import de.stoldt.lovebox.gpio.reed.ReedService;
+import de.stoldt.lovebox.telegram.MessageCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ public class GpioManager implements GpioCallback {
     private final LedService leds;
     private final ReedService reed;
     private final BashExecutor bashExecutor;
+    private MessageCallback callback;
     private boolean hasUnreadMessages;
 
     @Autowired
@@ -29,6 +31,11 @@ public class GpioManager implements GpioCallback {
     }
 
     @Override
+    public void setMessageCallback(MessageCallback callback) {
+        this.callback = callback;
+    }
+
+    @Override
     public void updateBoxState() {
         if (reed.isClosed()) {
             if (hasUnreadMessages()) {
@@ -38,9 +45,10 @@ public class GpioManager implements GpioCallback {
             LOGGER.info("Turning off Display...");
             bashExecutor.stopDisplay();
         } else {
-            leds.stopPulsing();
             LOGGER.info("Refreshing Page...");
             bashExecutor.refreshPage();
+            leds.stopPulsing();
+            callback.sendConfirmation();
             LOGGER.info("Starting Display...");
             bashExecutor.startDisplay();
         }

@@ -11,6 +11,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetFileResponse;
 import de.stoldt.lovebox.bo.Box;
 import de.stoldt.lovebox.bo.Publisher;
+import de.stoldt.lovebox.gpio.BashExecutor;
 import de.stoldt.lovebox.gpio.GpioCallback;
 import de.stoldt.lovebox.persistence.dao.BoxDao;
 import de.stoldt.lovebox.persistence.dao.PublisherDao;
@@ -29,14 +30,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class TelegramService extends TelegramBot {
+public class TelegramService extends TelegramBot implements MessageCallback {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TelegramService.class);
     private static final int MAX_DISPLAYED_SIGNS = 750;
-
-    // commands
-    private static final String REGISTER_COMMAND = "/register@Box";
-    private static final String UNREGISTER_COMMAND = "/unregisterBox";
 
     // answer
     private static final String ANSWER_REGISTERED_SUCCESSFULLY = "You have registered successfully. The following messages will be directly forwarded to the box";
@@ -45,20 +42,25 @@ public class TelegramService extends TelegramBot {
     private static final String ANSWER_INSERT_TOKEN = "Please insert the generated Token.";
     private static final String ANSWER_UNREGISTERED_BOX_FAILED = "Du bist nicht registriert und kannst dich deshalb auch nicht abmelden.";
     private static final String ANSWER_UNSUPPORTED_MEDIA_TYPE = "Unsupported Media Type";
+    private static final String ANSWER_BOX_OPENED = "Die Box wurde geöffnet.";
 
     private final String apiToken;
     private BoxDao boxDao;
     private PublisherDao publisherDao;
     private final GpioCallback gpioCallback;
+    private final BashExecutor bashExecutor;
     private final List<AbstractMessage> unreadAbstractMessages;
 
     @Autowired
-    public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao, PublisherDao publisherDao, GpioCallback gpioCallback) {
+    public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao,
+                           PublisherDao publisherDao, GpioCallback gpioCallback, BashExecutor bashExecutor) {
         super(apiToken);
         this.apiToken = apiToken;
         this.publisherDao = publisherDao;
         this.boxDao = boxDao;
         this.gpioCallback = gpioCallback;
+        gpioCallback.setMessageCallback(this);
+        this.bashExecutor = bashExecutor;
         this.unreadAbstractMessages = new ArrayList<>();
 
         setUpdatesListener(this::processUpdates);
@@ -86,13 +88,34 @@ public class TelegramService extends TelegramBot {
         String text = message.text();
         LOGGER.info("received text message: {} with data: {}", text, chat);
 
-        if (text.equals(REGISTER_COMMAND)) processRegisterRequest(chat);
+        if (Commands.isKnownCommand(text)) executeCommand(chat, text);
         else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken(chat.id());
-        else if (text.equals(UNREGISTER_COMMAND)) unRegisterPublisherWithValidToken(chat.id());
         else if (isValidPublisher(chat.id())) addTextToUnreadMessages(text);
         else {
             LOGGER.info("Illegal Access to Bot from Chat: {}", chat);
             sendMessage(chat.id(), ANSWER_ACCESS_DENIED);
+        }
+    }
+
+    private void executeCommand(Chat chat, String text) {
+        switch (Commands.valueOf(text)) {
+            case REGISTER:
+                processRegisterRequest(chat);
+                break;
+            case UNREGISTER:
+                unRegisterPublisherWithValidToken(chat.id());
+                break;
+            case SHUTDOWN:
+                bashExecutor.shutdownSystem();
+                break;
+            case RESTART:
+                bashExecutor.rebootSystem();
+                break;
+            case UPDATE:
+                bashExecutor.upgradePackages();
+                break;
+            default:
+                LOGGER.info("Could find given command: {}", text);
         }
     }
 
@@ -221,5 +244,10 @@ public class TelegramService extends TelegramBot {
 
     public String getApiToken() {
         return apiToken;
+    }
+
+    @Override
+    public void sendConfirmation() {
+        sendMessage(publisherDao.getPublisher().getChatId(), ANSWER_BOX_OPENED);
     }
 }

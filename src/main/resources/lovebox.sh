@@ -41,3 +41,6 @@ xset s noblank
 
 echo "Copying xinit File to $WORKING_DIR Folder"
 /bin/cp "$LOVEBOX_DIR"/src/main/resources/.xinitrc $WORKING_DIR/.xinitrc
+
+echo "Starting Browser"
+startx
