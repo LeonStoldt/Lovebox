@@ -22,7 +22,7 @@ public class InitialApplicationConfiguration {
     @PostConstruct
     public void postConstruct() {
         bashExecutor.startBrowser();
-        gpioManager.updateBoxState(false);
+        gpioManager.updateBoxState();
     }
 
 }

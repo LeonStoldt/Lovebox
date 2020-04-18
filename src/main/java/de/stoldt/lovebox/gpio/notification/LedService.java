@@ -8,6 +8,8 @@ import com.pi4j.io.gpio.RaspiPin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class LedService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LedService.class);
@@ -15,11 +17,15 @@ public class LedService {
     private static final int RANGE_LED_ON = 100;
     private static final int DELAY = 10;
     private static final int RANGE_LED_OFF = 0;
+    public static final long LED_ON_TIME = 500L;
+    public static final long LED_OFF_TIME = 500L;
 
     private final GpioPinPwmOutput leds;
     private Thread pwmThread;
+    private final AtomicBoolean running;
 
     public LedService(GpioController gpio) {
+        running = new AtomicBoolean(false);
         this.leds = gpio.provisionPwmOutputPin(GPIO_PIN);
         leds.setPwmRange(RANGE_LED_ON);
         leds.setShutdownOptions(true, PinState.LOW);
@@ -29,16 +35,18 @@ public class LedService {
         LOGGER.info("Start pulsing Pin {} with PWM", GPIO_PIN.getName());
         pwmThread = new Thread(this::pulse, "LED Pulse Thread");
         pwmThread.start();
+        running.set(true);
     }
 
-    @SuppressWarnings("all")
     private void pulse() {
-        while (true) {
+        while (running.get()) {
             try {
                 turnLedOn();
-                Thread.sleep(500L);
+                Thread.sleep(LED_ON_TIME);
                 turnLedOff();
+                Thread.sleep(LED_OFF_TIME);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 LOGGER.debug("caught InterruptedException while pulsing LEDs", e);
             }
         }
@@ -60,9 +68,7 @@ public class LedService {
 
     public void stopPulsing() {
         LOGGER.info("Stop pulsing Pin {} with PWM", GPIO_PIN.getName());
-        if (pwmThread != null) {
-            pwmThread.interrupt();
-        }
+        running.set(false);
         leds.setPwm(RANGE_LED_OFF);
     }
 

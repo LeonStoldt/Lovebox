@@ -13,18 +13,22 @@ public class BashExecutor {
 
     public void startDisplay() {
         try {
-            executeCommand("sleep", "1");
+            Process waitingProcess = executeCommand("sleep", "2");
+            waitingProcess.waitFor();
             executeCommand("xset", "dpms", "force", "on");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
             LOGGER.warn("Could not start Display:", e);
         }
     }
 
     public void stopDisplay() {
         try {
-            executeCommand("sleep", "1");
+            Process waitingProcess = executeCommand("sleep", "1");
+            waitingProcess.waitFor();
             executeCommand("xset", "dpms", "force", "off");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
             LOGGER.error("Could not turn off display", e);
         }
     }
@@ -41,7 +45,7 @@ public class BashExecutor {
         try {
             executeCommand("startx");
         } catch (IOException e) {
-            LOGGER.warn("Could not start browser by calling .xinitrc file:", e);
+            LOGGER.warn("Could not start xserver by calling .xinitrc file:", e);
         }
     }
 
@@ -70,13 +74,13 @@ public class BashExecutor {
         }
     }
 
-    private void executeCommand(String... commandAndArguments) throws IOException {
+    private Process executeCommand(String... commandAndArguments) throws IOException {
         String command = String.join(" ", commandAndArguments);
         LOGGER.info("Executing command: {}", command);
 
         ProcessBuilder processBuilder = new ProcessBuilder(commandAndArguments);
         processBuilder.environment().putIfAbsent("DISPLAY", ":0");
         processBuilder.environment().putIfAbsent("XAUTHORITY", "/root/.Xauthority");
-        processBuilder.start();
+        return processBuilder.start();
     }
 }

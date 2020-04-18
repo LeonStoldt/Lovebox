@@ -32,7 +32,7 @@ public class ReedService {
                     event.getPin(),
                     event.getState().getName(),
                     event.getState() == PinState.HIGH ? "CLOSED" : "OPENED");
-            gpioCallback.updateBoxState(true);
+            gpioCallback.updateBoxState();
         };
     }
 }
