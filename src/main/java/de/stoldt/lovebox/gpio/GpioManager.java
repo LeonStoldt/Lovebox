@@ -48,7 +48,9 @@ public class GpioManager implements GpioCallback {
             LOGGER.info("Refreshing Page...");
             bashExecutor.refreshPage();
             leds.stopPulsing();
-            callback.sendConfirmation();
+            if (callback != null) {
+                callback.sendConfirmation();
+            }
             LOGGER.info("Starting Display...");
             bashExecutor.startDisplay();
         }
