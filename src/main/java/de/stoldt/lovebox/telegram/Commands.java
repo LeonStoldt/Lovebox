@@ -1,6 +1,7 @@
 package de.stoldt.lovebox.telegram;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public enum Commands {
     REGISTER("/register@Box"),
@@ -19,10 +20,10 @@ public enum Commands {
         return command;
     }
 
-    public static boolean isKnownCommand(String command) {
+    public static Optional<Commands> of(String text) {
         return Arrays
                 .stream(values())
-                .map(Commands::getCommand)
-                .anyMatch(e -> e.equals(command));
+                .filter(command -> command.getCommand().equals(text))
+                .findFirst();
     }
 }

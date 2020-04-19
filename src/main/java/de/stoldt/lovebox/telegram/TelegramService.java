@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TelegramService extends TelegramBot implements MessageCallback {
@@ -87,7 +88,8 @@ public class TelegramService extends TelegramBot implements MessageCallback {
         String text = message.text();
         LOGGER.info("received text message: {} with data: {}", text, chat);
 
-        if (Commands.isKnownCommand(text)) executeCommand(chat, text);
+        Optional<Commands> optionalCommand = Commands.of(text);
+        if (optionalCommand.isPresent()) executeCommand(chat, optionalCommand.get());
         else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken(chat.id());
         else if (isValidPublisher(chat.id())) addTextToUnreadMessages(text);
         else {
@@ -96,8 +98,8 @@ public class TelegramService extends TelegramBot implements MessageCallback {
         }
     }
 
-    private void executeCommand(Chat chat, String text) {
-        switch (Commands.valueOf(text)) {
+    private void executeCommand(Chat chat, Commands command) {
+        switch (command) {
             case REGISTER:
                 processRegisterRequest(chat);
                 break;
@@ -114,7 +116,7 @@ public class TelegramService extends TelegramBot implements MessageCallback {
                 bashExecutor.upgradePackages();
                 break;
             default:
-                LOGGER.info("Could find given command: {}", text);
+                LOGGER.info("Could not find given command: {}", command);
         }
     }
 
