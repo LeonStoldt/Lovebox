@@ -65,8 +65,8 @@ public class BashExecutor implements BashCallback {
 
     public void upgradePackages() {
         try {
-            executeCommand("sudo", "apt-get update");
-            executeCommand("sudo", "apt-get upgrade -y");
+            executeCommand("apt-get", "update");
+            executeCommand("apt-get", "upgrade -y");
         } catch (IOException e) {
             LOGGER.warn("Could not upgrade packages:", e);
         }
@@ -74,7 +74,7 @@ public class BashExecutor implements BashCallback {
 
     public void rebootSystem() {
         try {
-            executeCommand("sudo", "reboot");
+            executeCommand("reboot");
         } catch (IOException e) {
             LOGGER.warn("Could not reboot system:", e);
         }
@@ -82,7 +82,7 @@ public class BashExecutor implements BashCallback {
 
     public void shutdownSystem() {
         try {
-            executeCommand("sudo", "shutdown now");
+            executeCommand("shutdown");
         } catch (IOException e) {
             LOGGER.warn("Could not shutdown system:", e);
         }
