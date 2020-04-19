@@ -6,15 +6,14 @@
     <title>Lovebox Display</title>
     <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"/>
 </head>
-<!-- TODO javascript ask for permission for audio and video play -->
 <body>
 <div>
-    <video class="video" autoplay loop>
-        <source th:src="${fileUrl}" type="video/mp4">
-        <source th:src="${fileUrl}" type="video/webm">
-        <source th:src="${fileUrl}" type="video/ogg">
-        <p>Your browser doesn't support HTML5 video.</p>
-    </video>
+    <iframe title="embedded video" class="video"
+            th:src="${fileUrl}"
+            allowfullscreen
+            sandbox="allow-scripts allow-presentation allow-same-origin"
+            allow="autoplay; fullscreen; xr-spatial-tracking; encrypted-media">
+    </iframe>
 </div>
 </body>
 </html>
