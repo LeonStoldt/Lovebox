@@ -13,6 +13,7 @@ import de.stoldt.lovebox.bo.Box;
 import de.stoldt.lovebox.bo.Publisher;
 import de.stoldt.lovebox.gpio.BashExecutor;
 import de.stoldt.lovebox.gpio.GpioCallback;
+import de.stoldt.lovebox.gpio.GpioManager;
 import de.stoldt.lovebox.persistence.dao.BoxDao;
 import de.stoldt.lovebox.persistence.dao.PublisherDao;
 import de.stoldt.lovebox.telegram.message.AbstractMessage;
@@ -53,13 +54,12 @@ public class TelegramService extends TelegramBot implements MessageCallback {
 
     @Autowired
     public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao,
-                           PublisherDao publisherDao, GpioCallback gpioCallback, BashExecutor bashExecutor) {
+                           PublisherDao publisherDao, BashExecutor bashExecutor) {
         super(apiToken);
         this.apiToken = apiToken;
         this.publisherDao = publisherDao;
         this.boxDao = boxDao;
-        this.gpioCallback = gpioCallback;
-        gpioCallback.setMessageCallback(this);
+        this.gpioCallback = new GpioManager(bashExecutor, this);
         this.bashExecutor = bashExecutor;
         this.unreadAbstractMessages = new ArrayList<>();
 
