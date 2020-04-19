@@ -7,7 +7,7 @@ public enum Commands {
     REGISTER("/register@Box"),
     UNREGISTER("/unregisterBox"),
     SHUTDOWN("/shutdown"),
-    RESTART("/restart"),
+    RESTART("/reboot"),
     UPDATE("/update");
 
     private final String command;
