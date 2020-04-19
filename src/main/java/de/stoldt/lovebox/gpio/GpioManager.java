@@ -44,7 +44,7 @@ public class GpioManager implements GpioCallback {
                 LOGGER.info("Starting Leds in view of unread messages...");
                 notifyLeds();
             }
-            bashCallback.stopVideoPlayer();
+            bashCallback.stopMediaPlayer();
             LOGGER.info("Turning off Display...");
             bashCallback.stopDisplay();
         } else {

@@ -8,9 +8,9 @@ public interface BashCallback {
 
     void refreshPage();
 
-    void startVideoPlayer(String fileUrl);
+    void startMediaPlayer(String fileUrl);
 
-    void stopVideoPlayer();
+    void stopMediaPlayer();
 
     void upgradePackages();
 

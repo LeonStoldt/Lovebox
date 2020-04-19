@@ -13,7 +13,7 @@ public class BashExecutor implements BashCallback {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BashExecutor.class);
 
-    private Process videoProcess;
+    private Process mediaProcess;
 
     public void startDisplay() {
         setDisplay(true);
@@ -44,18 +44,22 @@ public class BashExecutor implements BashCallback {
     }
 
     @Override
-    public void startVideoPlayer(String fileUrl) {
+    public void startMediaPlayer(String fileUrl) {
         try {
-            videoProcess = executeCommand("omxplayer", "--loop", "-p", "-o", "hdmi", fileUrl);
+            mediaProcess = executeCommand("omxplayer", "--loop", "-p", "-o", "hdmi", fileUrl);
         } catch (IOException e) {
-            LOGGER.warn("Could not Play video by using omxplayer", e);
+            LOGGER.warn("Could not Play media by using omxplayer", e);
         }
     }
 
     @Override
-    public void stopVideoPlayer() {
-        if (videoProcess != null && videoProcess.isAlive()) {
-            videoProcess.destroy();
+    public void stopMediaPlayer() {
+        if (mediaProcess != null && mediaProcess.isAlive()) {
+            try {
+                executeCommand("pkill", "omxplayer");
+            } catch (IOException e) {
+                LOGGER.warn("Could not kill omxplayer:", e);
+            }
         }
     }
 

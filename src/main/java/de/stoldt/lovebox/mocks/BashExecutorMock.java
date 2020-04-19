@@ -28,12 +28,12 @@ public class BashExecutorMock implements BashCallback {
     }
 
     @Override
-    public void startVideoPlayer(String fileUrl) {
+    public void startMediaPlayer(String fileUrl) {
         LOGGER.info("starting video: {}", fileUrl);
     }
 
     @Override
-    public void stopVideoPlayer() {
+    public void stopMediaPlayer() {
         LOGGER.info("stopped video, if playing");
     }
 

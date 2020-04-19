@@ -22,6 +22,8 @@ import java.util.Arrays;
 public class BackendController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BackendController.class);
+    private static final String VIDEO_START_TEXT = "Die Videonachricht wird gestartet...";
+    private static final String AUDIO_START_TEXT = "Die Audionachricht wird abgespielt...";
     private static final String DEFAULT_TEXT = "Keine neuen Nachrichten...";
     private static final String GET_FILE_URL = "https://api.telegram.org/file/bot%s/%s";
     private static final String THYMELEAF_VARIABLE_MESSAGE = "message";
@@ -45,25 +47,29 @@ public class BackendController {
     public String showMessage(Model model) {
         if (!telegramService.getUnreadAbstractMessages().isEmpty()) { // process next message
             AbstractMessage message = telegramService.removeMessage();
+            MessageType messageType = message.getMessageType();
 
-            if (message.getMessageType().equals(MessageType.TEXT)) {
+            if (messageType.equals(MessageType.TEXT)) {
                 TextMessage textMessage = (TextMessage) message;
                 model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, textMessage.getText());
                 return MessageType.TEXT.getTemplateName();
-            } else if (!isActiveDevProfile && message.getMessageType().equals(MessageType.VIDEO)) { // handle video differently with inactive dev profile
-                bashCallback.startVideoPlayer(getFileUrl((DataMessage) message));
+            } else if (!isActiveDevProfile && (messageType.equals(MessageType.VIDEO) || messageType.equals(MessageType.AUDIO))) {
+                // handle audio and video differently on raspberry pi (use media player)
+                model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, messageType.equals(MessageType.VIDEO) ? VIDEO_START_TEXT : AUDIO_START_TEXT);
+                bashCallback.startMediaPlayer(getFileUrl((DataMessage) message));
+                return MessageType.TEXT.getTemplateName();
             } else {
                 model.addAttribute(THYMELEAF_VARIABLE_FILE_URL, getFileUrl((DataMessage) message));
-                return message.getMessageType().getTemplateName();
+                return messageType.getTemplateName();
             }
 
         } else if (boxDao.getBox().getPublisherId() == null) { // register at box if no one is registered yet
             model.addAttribute(THYMELEAF_VARIABLE_UUID, boxDao.getBox().getToken());
             return "register";
+        } else { // no messages available
+            model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);
+            return MessageType.TEXT.getTemplateName();
         }
-        // no messages available
-        model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);
-        return MessageType.TEXT.getTemplateName();
     }
 
     private String getFileUrl(DataMessage message) {
