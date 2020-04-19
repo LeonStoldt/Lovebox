@@ -1,6 +1,6 @@
 package de.stoldt.lovebox;
 
-import de.stoldt.lovebox.gpio.BashExecutor;
+import de.stoldt.lovebox.gpio.BashCallback;
 import de.stoldt.lovebox.gpio.GpioCallback;
 import de.stoldt.lovebox.telegram.MessageCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,20 +12,20 @@ import javax.annotation.PostConstruct;
 public class InitialApplicationConfiguration {
 
     private final GpioCallback gpioCallback;
-    private final BashExecutor bashExecutor;
+    private final BashCallback bashCallback;
     private final MessageCallback messageCallback;
 
     @Autowired
-    public InitialApplicationConfiguration(GpioCallback gpioCallback, MessageCallback messageCallback, BashExecutor bashExecutor) {
+    public InitialApplicationConfiguration(GpioCallback gpioCallback, MessageCallback messageCallback, BashCallback bashCallback) {
         this.gpioCallback = gpioCallback;
         this.messageCallback = messageCallback;
-        this.bashExecutor = bashExecutor;
+        this.bashCallback = bashCallback;
     }
 
     @PostConstruct
     public void postConstruct() {
         gpioCallback.setMessageCallback(messageCallback);
-        bashExecutor.disableScreenSaver();
+        bashCallback.disableScreenSaver();
         gpioCallback.updateBoxState();
     }
 }

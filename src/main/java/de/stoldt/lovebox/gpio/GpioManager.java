@@ -8,8 +8,10 @@ import de.stoldt.lovebox.telegram.MessageCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+@Profile("!dev")
 @Service
 public class GpioManager implements GpioCallback {
 
@@ -17,16 +19,16 @@ public class GpioManager implements GpioCallback {
 
     private final LedService leds;
     private final ReedService reed;
-    private final BashExecutor bashExecutor;
+    private final BashCallback bashCallback;
     private MessageCallback messageCallback;
     private boolean hasUnreadMessages;
 
     @Autowired
-    public GpioManager(BashExecutor bashExecutor) {
+    public GpioManager(BashCallback bashCallback) {
         GpioController controller = GpioFactory.getInstance();
         this.leds = new LedService(controller);
         this.reed = new ReedService(controller, this);
-        this.bashExecutor = bashExecutor;
+        this.bashCallback = bashCallback;
         this.hasUnreadMessages = false;
     }
 
@@ -42,15 +44,16 @@ public class GpioManager implements GpioCallback {
                 LOGGER.info("Starting Leds in view of unread messages...");
                 notifyLeds();
             }
+            bashCallback.stopVideoPlayer();
             LOGGER.info("Turning off Display...");
-            bashExecutor.stopDisplay();
+            bashCallback.stopDisplay();
         } else {
             LOGGER.info("Refreshing Page...");
-            bashExecutor.refreshPage();
+            bashCallback.refreshPage();
             leds.stopPulsing();
             messageCallback.sendConfirmation();
             LOGGER.info("Starting Display...");
-            bashExecutor.startDisplay();
+            bashCallback.startDisplay();
         }
     }
 

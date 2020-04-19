@@ -11,7 +11,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetFileResponse;
 import de.stoldt.lovebox.bo.Box;
 import de.stoldt.lovebox.bo.Publisher;
-import de.stoldt.lovebox.gpio.BashExecutor;
+import de.stoldt.lovebox.gpio.BashCallback;
 import de.stoldt.lovebox.gpio.GpioCallback;
 import de.stoldt.lovebox.persistence.dao.BoxDao;
 import de.stoldt.lovebox.persistence.dao.PublisherDao;
@@ -49,18 +49,18 @@ public class TelegramService extends TelegramBot implements MessageCallback {
     private BoxDao boxDao;
     private PublisherDao publisherDao;
     private final GpioCallback gpioCallback;
-    private final BashExecutor bashExecutor;
+    private final BashCallback bashCallback;
     private final List<AbstractMessage> unreadAbstractMessages;
 
     @Autowired
     public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao,
-                           PublisherDao publisherDao, GpioCallback gpioCallback, BashExecutor bashExecutor) {
+                           PublisherDao publisherDao, GpioCallback gpioCallback, BashCallback bashCallback) {
         super(apiToken);
         this.apiToken = apiToken;
         this.publisherDao = publisherDao;
         this.boxDao = boxDao;
         this.gpioCallback = gpioCallback;
-        this.bashExecutor = bashExecutor;
+        this.bashCallback = bashCallback;
         this.unreadAbstractMessages = new ArrayList<>();
 
         setUpdatesListener(this::processUpdates);
@@ -107,13 +107,13 @@ public class TelegramService extends TelegramBot implements MessageCallback {
                 unRegisterPublisherWithValidToken(chat.id());
                 break;
             case SHUTDOWN:
-                bashExecutor.shutdownSystem();
+                bashCallback.shutdownSystem();
                 break;
             case RESTART:
-                bashExecutor.rebootSystem();
+                bashCallback.rebootSystem();
                 break;
             case UPDATE:
-                bashExecutor.upgradePackages();
+                bashCallback.upgradePackages();
                 break;
             default:
                 LOGGER.info("Could not find given command: {}", command);

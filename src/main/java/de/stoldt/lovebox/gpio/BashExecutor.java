@@ -2,14 +2,18 @@ package de.stoldt.lovebox.gpio;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Profile("!dev")
 @Component
-public class BashExecutor {
+public class BashExecutor implements BashCallback {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BashExecutor.class);
+
+    private Process videoProcess;
 
     public void startDisplay() {
         setDisplay(true);
@@ -36,6 +40,22 @@ public class BashExecutor {
             executeCommand("xdotool", "key", "F5");
         } catch (IOException e) {
             LOGGER.warn("Could not refresh Page:", e);
+        }
+    }
+
+    @Override
+    public void startVideoPlayer(String fileUrl) {
+        try {
+            videoProcess = executeCommand("omxplayer", "--loop", "-p", "-o", "hdmi", fileUrl);
+        } catch (IOException e) {
+            LOGGER.warn("Could not Play video by using omxplayer", e);
+        }
+    }
+
+    @Override
+    public void stopVideoPlayer() {
+        if (videoProcess != null && videoProcess.isAlive()) {
+            videoProcess.destroy();
         }
     }
 

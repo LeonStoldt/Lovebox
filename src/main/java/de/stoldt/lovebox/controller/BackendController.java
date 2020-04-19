@@ -1,6 +1,7 @@
 package de.stoldt.lovebox.controller;
 
 import com.pengrad.telegrambot.response.GetFileResponse;
+import de.stoldt.lovebox.gpio.BashCallback;
 import de.stoldt.lovebox.persistence.dao.BoxDao;
 import de.stoldt.lovebox.telegram.TelegramService;
 import de.stoldt.lovebox.telegram.message.AbstractMessage;
@@ -10,9 +11,12 @@ import de.stoldt.lovebox.telegram.message.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.Arrays;
 
 @Controller
 public class BackendController {
@@ -26,11 +30,15 @@ public class BackendController {
 
     private final TelegramService telegramService;
     private final BoxDao boxDao;
+    private final boolean isActiveDevProfile;
+    private final BashCallback bashCallback;
 
     @Autowired
-    public BackendController(TelegramService telegramService, BoxDao boxDao) {
+    public BackendController(TelegramService telegramService, BoxDao boxDao, Environment environment, BashCallback bashCallback) {
         this.telegramService = telegramService;
         this.boxDao = boxDao;
+        this.isActiveDevProfile = Arrays.asList(environment.getActiveProfiles()).contains("dev");
+        this.bashCallback = bashCallback;
     }
 
     @GetMapping("/")
@@ -42,6 +50,8 @@ public class BackendController {
                 TextMessage textMessage = (TextMessage) message;
                 model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, textMessage.getText());
                 return MessageType.TEXT.getTemplateName();
+            } else if (!isActiveDevProfile && message.getMessageType().equals(MessageType.VIDEO)) { // handle video differently with inactive dev profile
+                bashCallback.startVideoPlayer(getFileUrl((DataMessage) message));
             } else {
                 model.addAttribute(THYMELEAF_VARIABLE_FILE_URL, getFileUrl((DataMessage) message));
                 return message.getMessageType().getTemplateName();
@@ -50,11 +60,10 @@ public class BackendController {
         } else if (boxDao.getBox().getPublisherId() == null) { // register at box if no one is registered yet
             model.addAttribute(THYMELEAF_VARIABLE_UUID, boxDao.getBox().getToken());
             return "register";
-
-        } else { // no messages available
-            model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);
-            return MessageType.TEXT.getTemplateName();
         }
+        // no messages available
+        model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);
+        return MessageType.TEXT.getTemplateName();
     }
 
     private String getFileUrl(DataMessage message) {
