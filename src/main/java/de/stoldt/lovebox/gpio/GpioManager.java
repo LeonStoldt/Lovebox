@@ -7,9 +7,10 @@ import de.stoldt.lovebox.gpio.reed.ReedService;
 import de.stoldt.lovebox.telegram.MessageCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
-
+@Service
 public class GpioManager implements GpioCallback {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GpioManager.class);
@@ -17,16 +18,21 @@ public class GpioManager implements GpioCallback {
     private final LedService leds;
     private final ReedService reed;
     private final BashExecutor bashExecutor;
-    private final MessageCallback messageCallback;
+    private MessageCallback messageCallback;
     private boolean hasUnreadMessages;
 
-    public GpioManager(@NotNull BashExecutor bashExecutor, @NotNull MessageCallback messageCallback) {
+    @Autowired
+    public GpioManager(BashExecutor bashExecutor) {
         GpioController controller = GpioFactory.getInstance();
         this.leds = new LedService(controller);
         this.reed = new ReedService(controller, this);
         this.bashExecutor = bashExecutor;
-        this.messageCallback = messageCallback;
         this.hasUnreadMessages = false;
+    }
+
+    @Override
+    public void setMessageCallback(MessageCallback messageCallback) {
+        this.messageCallback = messageCallback;
     }
 
     @Override
