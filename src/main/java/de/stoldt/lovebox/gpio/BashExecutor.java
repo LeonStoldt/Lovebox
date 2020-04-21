@@ -26,10 +26,8 @@ public class BashExecutor implements BashCallback {
     private void setDisplay(boolean displayOn) {
         String status = displayOn ? "on" : "off";
         try {
-            Process waitingProcess = executeCommand("sleep", "1");
-            waitingProcess.waitFor();
             executeCommand("xset", "dpms", "force", status);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             Thread.currentThread().interrupt();
             LOGGER.error("Could not turn off display", e);
         }
