@@ -16,18 +16,20 @@ public class BashExecutor implements BashCallback {
     private Process mediaProcess;
 
     public void startDisplay() {
-        setDisplay(true);
+        setDisplay(true, true);
     }
 
     public void stopDisplay() {
-        setDisplay(false);
+        setDisplay(false, false);
     }
 
-    private void setDisplay(boolean displayOn) {
+    private void setDisplay(boolean displayOn, boolean delayed) {
         String status = displayOn ? "on" : "off";
         try {
-            Process waitingProcess = executeCommand("sleep", "1");
-            waitingProcess.waitFor();
+            if (delayed) {
+                Process waitingProcess = executeCommand("sleep", "2");
+                waitingProcess.waitFor();
+            }
             executeCommand("xset", "dpms", "force", status);
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
