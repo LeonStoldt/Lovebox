@@ -37,20 +37,21 @@ public class TelegramService extends TelegramBot implements MessageCallback {
     private static final int MAX_DISPLAYED_SIGNS = 750;
 
     // answer
-    private static final String ANSWER_REGISTERED_SUCCESSFULLY = "You have registered successfully. The following messages will be directly forwarded to the box";
+    private static final String ANSWER_REGISTERED_SUCCESSFULLY = "Du hast dich erfolgreich registriert. Die kommenden Nachrichten werden ab sofort direkt an die Box weitergeleitet";
     private static final String ANSWER_UNREGISTERED_BOX_SUCCESSFULLY = "Die Registrierung der Box wurde aufgehoben";
-    private static final String ANSWER_ACCESS_DENIED = "Access denied";
-    private static final String ANSWER_INSERT_TOKEN = "Please insert the generated Token.";
+    private static final String ANSWER_ACCESS_DENIED = "Zugriff verweigert";
+    private static final String ANSWER_INSERT_TOKEN = "Bitte gebe das generierte Token ein:";
     private static final String ANSWER_UNREGISTERED_BOX_FAILED = "Du bist nicht registriert und kannst dich deshalb auch nicht abmelden.";
-    private static final String ANSWER_UNSUPPORTED_MEDIA_TYPE = "Unsupported Media Type";
+    private static final String ANSWER_UNSUPPORTED_MEDIA_TYPE = "Das Dateiformat wird leider nicht unterstützt";
     private static final String ANSWER_BOX_OPENED = "Die Box wurde geöffnet.";
 
     private final String apiToken;
-    private BoxDao boxDao;
-    private PublisherDao publisherDao;
+    private final BoxDao boxDao;
+    private final PublisherDao publisherDao;
     private final GpioCallback gpioCallback;
     private final BashCallback bashCallback;
     private final List<AbstractMessage> unreadAbstractMessages;
+    private boolean requestedRegister;
 
     @Autowired
     public TelegramService(@Value("${telegram.token}") String apiToken, BoxDao boxDao,
@@ -62,6 +63,7 @@ public class TelegramService extends TelegramBot implements MessageCallback {
         this.gpioCallback = gpioCallback;
         this.bashCallback = bashCallback;
         this.unreadAbstractMessages = new ArrayList<>();
+        this.requestedRegister = false;
 
         setUpdatesListener(this::processUpdates);
     }
@@ -90,12 +92,16 @@ public class TelegramService extends TelegramBot implements MessageCallback {
 
         Optional<Commands> optionalCommand = Commands.of(text);
         if (optionalCommand.isPresent()) executeCommand(chat, optionalCommand.get());
-        else if (text.equals(boxDao.getBox().getToken())) registerPublisherWithValidToken(chat.id());
+        else if (isValidToken(text)) registerPublisherWithValidToken(text, chat.id());
         else if (isValidPublisher(chat.id())) addTextToUnreadMessages(text);
         else {
             LOGGER.info("Illegal Access to Bot from Chat: {}", chat);
             sendMessage(chat.id(), ANSWER_ACCESS_DENIED);
         }
+    }
+
+    private boolean isValidToken(String text) {
+        return boxDao.getAll().anyMatch(box -> box.getToken().equals(text));
     }
 
     private void executeCommand(Chat chat, Commands command) {
@@ -125,7 +131,7 @@ public class TelegramService extends TelegramBot implements MessageCallback {
             addMessage(new TextMessage(Arrays
                     .stream(text.split("(?<= )"))
                     .reduce((firstText, secondText) -> {
-                        if (firstText.length() + secondText.length() <= 750) {
+                        if (firstText.length() + secondText.length() <= 500) {
                             return firstText + secondText;
                         }
                         addMessage(new TextMessage(firstText));
@@ -140,34 +146,32 @@ public class TelegramService extends TelegramBot implements MessageCallback {
         try {
             Publisher publisher = new Publisher(chat);
             publisherDao.save(publisher);
+            boxDao.save(new Box());
+            requestedRegister = true;
             sendMessage(publisher.getChatId(), ANSWER_INSERT_TOKEN);
-
         } catch (IllegalAccessException e) {
             LOGGER.info("Illegal Access to Bot from Chat: {}", chat);
             sendMessage(chat.id(), ANSWER_ACCESS_DENIED);
         }
     }
 
-    private void registerPublisherWithValidToken(Long chatId) {
-        String answer;
-        Publisher publisher = publisherDao.getPublisher();
-        if (publisher != null) {
-            Box box = boxDao.getBox();
-            publisher.setToken(box.getToken());
+    private void registerPublisherWithValidToken(String token, Long chatId) {
+        String answer = ANSWER_ACCESS_DENIED;
+        Optional<Publisher> optionalPublisher = publisherDao.getPublisherFor(chatId);
+        if (optionalPublisher.isPresent()) {
+            Publisher publisher = optionalPublisher.get();
+            boxDao.getBoxBy(token).map(box -> box.withPublisherId(chatId)).ifPresent(boxDao::save);
+            publisher.withToken(token);
             publisherDao.save(publisher);
-
-            box.setPublisherId(publisher.getChatId());
-            boxDao.save(box);
             answer = ANSWER_REGISTERED_SUCCESSFULLY;
-        } else {
-            answer = ANSWER_ACCESS_DENIED;
         }
         sendMessage(chatId, answer);
     }
 
     private void unRegisterPublisherWithValidToken(Long chatId) {
-        if (chatId.equals(boxDao.getBox().getPublisherId())) {
-            boxDao.initializeAndSaveNewBox();
+        if (boxDao.getBoxBy(chatId).isPresent()) {
+            boxDao.remove(chatId);
+            publisherDao.getPublisherFor(chatId).map(publisher -> publisher.withToken(null)).ifPresent(publisherDao::save);
             LOGGER.info("unregistered Box and deleted Publisher with id {}", chatId);
             sendMessage(chatId, ANSWER_UNREGISTERED_BOX_SUCCESSFULLY);
         } else {
@@ -177,7 +181,10 @@ public class TelegramService extends TelegramBot implements MessageCallback {
     }
 
     private boolean isValidPublisher(Long publisherId) {
-        return boxDao.getBox().getPublisherId() != null && boxDao.getBox().getPublisherId().equals(publisherId);
+        Optional<Publisher> optionalPublisher = publisherDao.getPublisherFor(publisherId);
+        return boxDao.getBoxBy(publisherId).isPresent()
+                && optionalPublisher.isPresent()
+                && optionalPublisher.get().getToken() != null;
     }
 
     private void processPhotoMessage(Message message) {
@@ -239,6 +246,16 @@ public class TelegramService extends TelegramBot implements MessageCallback {
         return execute(fileRequest);
     }
 
+    public boolean isRegisterRequested() {
+        boolean isRegisterRequested = this.requestedRegister;
+        this.requestedRegister = false;
+        return boxDao.getAll().count() == 0 || isRegisterRequested;
+    }
+
+    public String getToken() {
+        return boxDao.getNextAvailableToken();
+    }
+
     public List<AbstractMessage> getUnreadAbstractMessages() {
         return unreadAbstractMessages;
     }
@@ -249,6 +266,6 @@ public class TelegramService extends TelegramBot implements MessageCallback {
 
     @Override
     public void sendConfirmation() {
-        sendMessage(publisherDao.getPublisher().getChatId(), ANSWER_BOX_OPENED);
+        publisherDao.getAll().forEach(publisher -> sendMessage(publisher.getChatId(), ANSWER_BOX_OPENED));
     }
 }

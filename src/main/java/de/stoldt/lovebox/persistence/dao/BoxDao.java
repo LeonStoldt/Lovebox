@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Component
 public class BoxDao {
@@ -19,22 +20,36 @@ public class BoxDao {
         this.repository = repository;
     }
 
-    public @NonNull Box getBox() {
-        List<BoxEntity> allBoxes = repository.findAll();
-        return !allBoxes.isEmpty()
-                ? new Box(allBoxes.get(0))
-                : initializeAndSaveNewBox();
+    public Optional<Box> getBoxBy(String token) {
+        return repository.findBoxEntityByGeneratedToken(token).map(Box::new);
     }
 
-    public Box initializeAndSaveNewBox() {
-        Box emptyBox = new Box();
-        save(emptyBox);
-        return emptyBox;
+    public Optional<Box> getBoxBy(Long publisherId) {
+        return repository.findBoxEntityByPublisherId(publisherId).map(Box::new);
     }
 
-    public void save(@NonNull Box newBox) {
-        repository.deleteAll();
-        repository.save(new BoxEntity(newBox));
+    public Stream<Box> getAll() {
+        return repository
+                .findAll()
+                .stream()
+                .map(Box::new);
     }
 
+    public String getNextAvailableToken() {
+        return repository.findFirstByPublisherIdIsNull().map(BoxEntity::getGeneratedToken).orElse(createNewBox().getToken());
+    }
+
+    private Box createNewBox() {
+        Box box = new Box();
+        save(box);
+        return box;
+    }
+
+    public void save(@NonNull Box box) {
+        repository.save(new BoxEntity(box));
+    }
+
+    public void remove(Long publisherId) {
+        repository.findBoxEntityByPublisherId(publisherId).ifPresent(repository::delete);
+    }
 }

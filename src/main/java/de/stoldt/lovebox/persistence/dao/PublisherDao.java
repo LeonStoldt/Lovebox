@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class PublisherDao {
@@ -19,15 +21,15 @@ public class PublisherDao {
         this.repository = repository;
     }
 
-    public Publisher getPublisher() {
-        List<PublisherEntity> allPublisher = repository.findAll();
-        return !allPublisher.isEmpty()
-                ? new Publisher(allPublisher.get(0))
-                : null;
+    public Optional<Publisher> getPublisherFor(Long chatId) {
+        return repository.findPublisherEntityByChatId(chatId).map(Publisher::new);
+    }
+
+    public Collection<Publisher> getAll() {
+        return repository.findAll().stream().map(Publisher::new).collect(Collectors.toList());
     }
 
     public void save(@NonNull Publisher newPublisher) {
-        repository.deleteAll();
         repository.save(new PublisherEntity(newPublisher));
     }
 }

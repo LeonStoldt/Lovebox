@@ -53,10 +53,19 @@ After system reboot:
 -   exit dietpi-config reboot
 
 
-## Troubleshooting
+-   dietpi config > audio > soundcard "onboard: force hdmi output" (rpi-bcm2835-hdmi-eq)
+-   dietpi config > audio > dietpi JustBoom > ALSA Mixer "turn up to 100%"
+
+## Troubleshooting and helpful links
 
 -   see more details on ssh login: add `-v` to ssh command
 
 -   run `systemctl status dietpi-autostart_custom` to see system info on startup failures of custom script
 
 -   check if `/var/lib/dietpi/dietpi-autostart/custom.sh` ist executable (otherwise run `chmod +x /var/lib/dietpi/dietpi-autostart/custom.sh`)
+
+-   Try installing the following and reboot. It should enable HTML5 video and audio in Midori, kweb, Luakit and any other webkit based browser. `sudo apt-get install gstreamer0.10-plugins-base gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gstreamer0.10-plugins-ugly`
+
+-   http://steinerdatenbank.de/software/kweb_manual.pdf
+
+-   http://steinerdatenbank.de/software/omxplayerGUI_manual.pdf

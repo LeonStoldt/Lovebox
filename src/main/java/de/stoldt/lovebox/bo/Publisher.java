@@ -57,7 +57,8 @@ public class Publisher {
         return token;
     }
 
-    public void setToken(String token) {
+    public Publisher withToken(String token) {
         this.token = token;
+        return this;
     }
 }

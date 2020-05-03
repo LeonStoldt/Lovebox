@@ -31,14 +31,12 @@ public class BackendController {
     private static final String THYMELEAF_VARIABLE_UUID = "uuid";
 
     private final TelegramService telegramService;
-    private final BoxDao boxDao;
     private final boolean isActiveDevProfile;
     private final BashCallback bashCallback;
 
     @Autowired
-    public BackendController(TelegramService telegramService, BoxDao boxDao, Environment environment, BashCallback bashCallback) {
+    public BackendController(TelegramService telegramService, Environment environment, BashCallback bashCallback) {
         this.telegramService = telegramService;
-        this.boxDao = boxDao;
         this.isActiveDevProfile = Arrays.asList(environment.getActiveProfiles()).contains("dev");
         this.bashCallback = bashCallback;
     }
@@ -63,8 +61,8 @@ public class BackendController {
                 return messageType.getTemplateName();
             }
 
-        } else if (boxDao.getBox().getPublisherId() == null) { // register at box if no one is registered yet
-            model.addAttribute(THYMELEAF_VARIABLE_UUID, boxDao.getBox().getToken());
+        } else if (telegramService.isRegisterRequested()) { // register at box
+            model.addAttribute(THYMELEAF_VARIABLE_UUID, telegramService.getToken());
             return "register";
         } else { // no messages available
             model.addAttribute(THYMELEAF_VARIABLE_MESSAGE, DEFAULT_TEXT);

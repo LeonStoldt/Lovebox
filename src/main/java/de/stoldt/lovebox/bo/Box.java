@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class Box {
 
-    private String token;
+    private final String token;
     private Long publisherId;
 
     public Box() {
@@ -22,15 +22,12 @@ public class Box {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     public Long getPublisherId() {
         return publisherId;
     }
 
-    public void setPublisherId(Long publisherId) {
+    public Box withPublisherId(Long publisherId) {
         this.publisherId = publisherId;
+        return this;
     }
 }
